@@ -1,17 +1,24 @@
 {
-  "name": "@eigenspace/helper-scripts",
-  "version": "1.0.1",
-  "main": "index.js",
-  "repository": "https://github.com/eigen-space/common-scripts.git",
-  "author": "Anton Kalashnikov <tohasan@yandex.ru>",
-  "contributors": [
-    "Anton Kalashnikov <tohasan@yandex.ru>",
-    "Daniil Sitdikov <hello.boriskas@gmail.com>",
-    "Nikita Sergeev <sergeev.nickitos@yandex.ru>",
-    "Nikita Agupov <nktrsk@gmail.com>"
-  ],
-  "license": "MIT",
-  "scripts": {
-    "build": "yarn publish --access public"
-  }
+    "name": "@eigenspace/helper-scripts",
+    "version": "1.0.1",
+    "main": "index.js",
+    "repository": "https://github.com/eigen-space/common-scripts.git",
+    "author": "Anton Kalashnikov <tohasan@yandex.ru>",
+    "contributors": [
+        "Anton Kalashnikov <tohasan@yandex.ru>",
+        "Daniil Sitdikov <hello.boriskas@gmail.com>",
+        "Nikita Sergeev <sergeev.nickitos@yandex.ru>",
+        "Nikita Agupov <nktrsk@gmail.com>"
+    ],
+    "license": "MIT",
+    "keywords": [
+        "javascript",
+        "nodejs",
+        "common",
+        "utils",
+        "scripts"
+    ],
+    "scripts": {
+        "build": "yarn publish --access public"
+    }
 }
