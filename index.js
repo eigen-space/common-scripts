@@ -1,0 +1,1 @@
+export CommonScripts from './scripts/common';
