@@ -44,9 +44,12 @@ dependencyTypes.forEach(dependencyType => {
 
 function findPackagesToRemove(dependenciesMap) {
     if (updateAllSnapshotDependencies) {
-        const snapshotDependencyPattern = /[\^|~]?\d+\.\d+\.\d+-.+/;
-        return Object.keys(dependenciesMap).filter(key => snapshotDependencyPattern.test(dependenciesMap[key]));
-
+        const snapshotPattern = /[\^|~]?\d+\.\d+\.\d+-.+/;
+        return Object.keys(dependenciesMap).filter(key => {
+            const isSnapshot = snapshotPattern.test(dependenciesMap[key]);
+            const isUrl = dependenciesMap[key].startsWith('http');
+            return isSnapshot || isUrl;
+        });
     }
 
     return dependenciesToReinstall.filter(dependency => dependenciesMap[dependency]);
