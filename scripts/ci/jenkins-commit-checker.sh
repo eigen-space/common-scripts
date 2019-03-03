@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Script checks whether commit is created automatically.
 # Exit with error code if it is jenkins's commit, otherwise with success code.
