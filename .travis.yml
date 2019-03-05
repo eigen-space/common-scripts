@@ -4,6 +4,7 @@ node_js:
 # node_modules cache
 cache: yarn
 script:
+  - git config --global github.user sergeevNick
+  - git config --global github.token $GITHUB_API_KEY
   - git checkout $TRAVIS_BRANCH
-  - git clone https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git eigen-space/helper-scripts
   - yarn deploy:publish
