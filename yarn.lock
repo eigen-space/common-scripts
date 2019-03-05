@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@eigenspace/helper-scripts@1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@eigenspace/helper-scripts/-/helper-scripts-1.0.10.tgz#1063a12e4b0ee9a75a9490eaa115622afd8155b5"
+  integrity sha512-w1+PpW2SwIVzWKXZSKCO1nGvXXmVZB+4AOm1q70cP5eO8uR8j6KXwKpsbTK2YBNAN9a6u+hauYL0ThlNMmX/5w==
+  dependencies:
+    minimist "1.2.0"
+
 minimist@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"

@@ -1,6 +1,6 @@
 {
     "name": "@eigenspace/helper-scripts",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "main": "index.js",
     "repository": "https://github.com/eigen-space/common-scripts.git",
     "author": "Anton Kalashnikov <tohasan@yandex.ru>",
@@ -19,7 +19,7 @@
         "scripts"
     ],
     "scripts": {
-        "deploy:publish": "node node_modules/@eigenspace/helper-scripts/scripts/ci/publish.js"
+        "deploy:publish": "node ./scripts/ci/publish.js"
     },
     "dependencies": {
         "minimist": "1.2.0"

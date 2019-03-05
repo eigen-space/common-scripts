@@ -21,7 +21,8 @@ const argv = require('minimist')(process.argv.slice(2));
 
 // Get dependency suffix (branch name)
 const { name, version } = packageJson;
-const dist = argv.dist || './dist';
+const dist = argv.dist || fs.existsSync('./dist') && './dist' || currentDir;
+
 let currentBranch = getCurrentBranchName();
 
 console.log('branch:', currentBranch);
@@ -40,19 +41,25 @@ if (isSnapshotVersion) {
     // Then remove dependency from registry
     run(`npm unpublish ${fullVersion}`);
     publish(`${version}${suffix}`);
+
+    if (dist === currentDir) {
+        // Remove snapshot version from package.json
+        run(`git checkout package.json`);
+    }
+
 } else {
     console.log('start publishing release package...');
     // If it is production version (master), we check it exists in npm registry
     const versionInRegistry = run(`npm view ${fullVersion} version`);
     if (versionInRegistry) {
         console.log(`package '${fullVersion}' exists in registry`);
-        incrementVersion();
+        incrementVersionAndPush();
     }
 
     publish();
     checkout('dev');
     merge('master');
-    incrementVersion();
+    incrementVersionAndPush();
 }
 
 // Functions
@@ -73,10 +80,7 @@ function publish(version) {
     run(`npm publish ${dist}`);
 }
 
-function incrementVersion() {
-    const packageJson = readJsonFile('package.json');
-
-    const { version } = packageJson;
+function incrementVersionAndPush() {
     const [major, minor, patch] = version.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
     console.log('incremented version:', incrementedVersion);
