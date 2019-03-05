@@ -4,4 +4,5 @@ node_js:
 # node_modules cache
 cache: yarn
 script:
+  - git checkout -b $TRAVIS_BRANCH origin/$TRAVIS_BRANCH
   - yarn deploy:publish
