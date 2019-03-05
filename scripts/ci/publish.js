@@ -117,6 +117,7 @@ function merge(branchName) {
 }
 
 function getCurrentBranchName() {
+    run('git pull');
     const branchList = run('git branch');
     const branch = branchList.split('\n')
         .find(branch => branch.startsWith('*'));
