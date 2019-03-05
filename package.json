@@ -1,6 +1,6 @@
 {
     "name": "@eigenspace/helper-scripts",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "main": "index.js",
     "repository": "https://github.com/eigen-space/common-scripts.git",
     "author": "Anton Kalashnikov <tohasan@yandex.ru>",
@@ -20,5 +20,8 @@
     ],
     "scripts": {
         "build": "yarn publish --access public"
+    },
+    "dependencies": {
+        "minimist": "1.2.0"
     }
 }
