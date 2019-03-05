@@ -4,4 +4,4 @@ node_js:
 # node_modules cache
 cache: yarn
 script:
-  - yarn build
+  - yarn deploy:publish
