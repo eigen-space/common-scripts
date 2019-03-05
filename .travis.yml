@@ -5,5 +5,5 @@ node_js:
 cache: yarn
 script:
   - git checkout $TRAVIS_BRANCH
-  - git remote set-url --push origin https:sergeevNick:aa13493dad2300081a5ef71e80d369bfe693530c//github.com/eigen-space/helper-scripts.git
+  - git clone https://sergeevNick:aa13493dad2300081a5ef71e80d369bfe693530c@github.com/eigen-space/helper-scripts.git
   - yarn deploy:publish
