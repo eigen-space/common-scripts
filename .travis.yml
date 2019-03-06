@@ -9,4 +9,4 @@ if: branch = master
 script:
   - git checkout $TRAVIS_BRANCH
   - git remote set-url origin https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
-  - chmod +x ./scripts/ci/detect-autocommit.sh && ./scripts/ci/detect-autocommit.sh && npm deploy:publish
+  - chmod +x ./scripts/ci/detect-autocommit.sh && ./scripts/ci/detect-autocommit.sh && npm run deploy:publish
