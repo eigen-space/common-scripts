@@ -81,9 +81,12 @@ function publish(version) {
 }
 
 function incrementVersionAndPush() {
+    // We getting new package.json to get always actual package.json for case when we change our branch.
+    // For example, we move from master to dev. There at dev branch package.json will be different.
     const packageJson = readJsonFile('package.json');
-
+    // Same with version. Always getting actual version of package.
     const { version } = packageJson;
+
     const [major, minor, patch] = version.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
     console.log('incremented version:', incrementedVersion);
