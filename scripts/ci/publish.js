@@ -6,7 +6,7 @@
  *
  * Parameters:
  *  --dist      (optional)  You can specify destination of package you want to publish.
- *                          Default: './dist'
+ *                          Default: './dist' or current directory if no ./dist is there.
  *
  * @type {string}
  * @see {@link https://www.notion.so/arrivalms/Versioning-5bf1876eb2f142339d719f818cc2250c}
