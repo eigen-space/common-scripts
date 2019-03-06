@@ -9,4 +9,4 @@ script:
   - git remote set-url origin https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
   - chmod +x ./scripts/ci/jenkins-commit-checker.sh
   - ./scripts/ci/jenkins-commit-checker.sh
-  - yarn deploy:publish; fi
+  - yarn deploy:publish
