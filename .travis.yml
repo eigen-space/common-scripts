@@ -7,6 +7,4 @@ if: branch = master
 script:
   - git checkout $TRAVIS_BRANCH
   - git remote set-url origin https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
-  - chmod +x ./scripts/ci/jenkins-commit-checker.sh
-  - ./scripts/ci/jenkins-commit-checker.sh
-  - node ./scripts/ci/publish.js
+  - chmod +x ./scripts/ci/jenkins-commit-checker.sh && ./scripts/ci/jenkins-commit-checker.sh && node ./scripts/ci/publish.js
