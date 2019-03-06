@@ -4,7 +4,6 @@ node_js:
 # node_modules cache
 cache: yarn
 script:
-  - git config --global github.user sergeevNick
-  - git config --global github.token $GITHUB_API_KEY
   - git checkout $TRAVIS_BRANCH
-  - yarn deploy:publish
+  - git remote set-url origin https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then ./scripts/ci/jenkins-commit-checker.sh && yarn deploy:publish; fi
