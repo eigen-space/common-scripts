@@ -84,13 +84,13 @@ function incrementVersionAndPush() {
     const [major, minor, patch] = version.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
     console.log('incremented version:', incrementedVersion);
+    run('git pull');
 
     packageJson.version = incrementedVersion;
     const packageJsonStringified = JSON.stringify(packageJson, undefined, 4);
     fs.writeFileSync('package.json', packageJsonStringified);
     fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
-    run('git push');
     run(`git commit --all --no-verify --message "auto/ci: set version ${incrementedVersion}"`);
     run(`git push --no-verify origin ${currentBranch}`);
 }
