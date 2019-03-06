@@ -1,6 +1,8 @@
 language: node_js
 node_js:
   - "11.10"
+git:
+  depth: false
 # node_modules cache
 cache:
   directories:
@@ -8,3 +10,6 @@ cache:
 if: branch = master
 script:
   - git branch -a
+  - git checkout $TRAVIS_BRANCH
+  - git remote set-url origin https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
+  - chmod +x ./scripts/ci/detect-autocommit.sh && ./scripts/ci/detect-autocommit.sh && npm run deploy:publish
