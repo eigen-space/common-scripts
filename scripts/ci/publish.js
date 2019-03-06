@@ -81,6 +81,9 @@ function publish(version) {
 }
 
 function incrementVersionAndPush() {
+    const packageJson = readJsonFile('package.json');
+
+    const { version } = packageJson;
     const [major, minor, patch] = version.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
     console.log('incremented version:', incrementedVersion);
