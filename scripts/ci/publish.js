@@ -84,7 +84,6 @@ function incrementVersionAndPush() {
     const [major, minor, patch] = version.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
     console.log('incremented version:', incrementedVersion);
-    run('git pull');
 
     packageJson.version = incrementedVersion;
     const packageJsonStringified = JSON.stringify(packageJson, undefined, 4);
