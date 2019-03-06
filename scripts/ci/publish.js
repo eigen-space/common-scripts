@@ -90,6 +90,7 @@ function incrementVersionAndPush() {
     fs.writeFileSync('package.json', packageJsonStringified);
     fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
+    run('git push');
     run(`git commit --all --no-verify --message "auto/ci: set version ${incrementedVersion}"`);
     run(`git push --no-verify origin ${currentBranch}`);
 }
