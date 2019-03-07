@@ -16,6 +16,7 @@ const packageJson = require(`${currentDir}/package.json`);
 const exec = require('child_process').execSync;
 const dependenciesToReinstall = process.argv.slice(2);
 const updateAllSnapshotDependencies = !dependenciesToReinstall.length;
+let shouldUpdateLatestDependencies = true;
 
 const dependencyFlags = new Map([
     ['dependencies', ''],
@@ -39,8 +40,14 @@ dependencyTypes.forEach(dependencyType => {
         console.log('packages to remove', packagesToRemove);
 
         run(getCommand(packagesToRemove, dependenciesToInstall, dependencyType));
+        shouldUpdateLatestDependencies = false;
     }
 });
+
+// If no one package was added then we need explicitly update latest dependencies.
+if (shouldUpdateLatestDependencies) {
+    run('yarn');
+}
 
 function findPackagesToRemove(dependenciesMap) {
     if (updateAllSnapshotDependencies) {
