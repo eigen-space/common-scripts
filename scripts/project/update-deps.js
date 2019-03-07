@@ -26,9 +26,6 @@ const dependencyFlags = new Map([
 
 const dependencyTypes = Array.from(dependencyFlags.keys());
 
-// Updating @latest packages to latest version
-run('yarn');
-
 dependencyTypes.forEach(dependencyType => {
     const dependenciesMap = packageJson[dependencyType];
 
