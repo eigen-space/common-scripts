@@ -29,5 +29,5 @@ function bundleDts(sourceDir, distDir) {
         .map(file => `export * from './${file}'`)
         .join('\n');
 
-    fs.writeFileSync(`${distDir}\\index.d.ts`, statements);
+    fs.writeFileSync(`${distDir}/index.d.ts`, statements);
 }
