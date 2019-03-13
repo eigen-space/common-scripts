@@ -30,18 +30,21 @@ const dependencyTypes = Array.from(dependencyFlags.keys());
 dependencyTypes.forEach(dependencyType => {
     const dependenciesMap = packageJson[dependencyType];
 
-    if (dependenciesMap) {
-        const packagesToRemove = findPackagesToRemove(dependenciesMap);
-        if (!packagesToRemove.length) {
-            return;
-        }
-
-        const dependenciesToInstall = getDependenciesToInstall(dependenciesMap, packagesToRemove);
-        console.log('packages to remove', packagesToRemove);
-
-        run(getCommand(packagesToRemove, dependenciesToInstall, dependencyType));
-        shouldUpdateLatestDependencies = false;
+    if (!dependenciesMap) {
+        return;
     }
+
+    const dependenciesToUpdate = findDependenciesToUpdate(dependenciesMap);
+    if (!dependenciesToUpdate.length) {
+        return;
+    }
+
+    console.log('dependencies to update', dependenciesToUpdate);
+
+    const dependenciesWithVersion = getDependenciesWithVersion(dependenciesMap, dependenciesToUpdate);
+    updateDependencies(dependenciesToUpdate, dependenciesWithVersion, dependencyType);
+
+    shouldUpdateLatestDependencies = false;
 });
 
 // If no one package was added then we need explicitly update latest dependencies.
@@ -49,27 +52,30 @@ if (shouldUpdateLatestDependencies) {
     run('yarn');
 }
 
-function findPackagesToRemove(dependenciesMap) {
-    if (updateAllSnapshotDependencies) {
-        const snapshotPattern = /[\^|~]?\d+\.\d+\.\d+-.+/;
-        return Object.keys(dependenciesMap).filter(key => {
-            const isSnapshot = snapshotPattern.test(dependenciesMap[key]);
-            const isUrl = dependenciesMap[key].startsWith('http');
-            return isSnapshot || isUrl;
-        });
+function findDependenciesToUpdate(dependenciesMap) {
+    if (!updateAllSnapshotDependencies) {
+        return dependenciesToReinstall.filter(dependency => dependenciesMap[dependency]);
     }
 
-    return dependenciesToReinstall.filter(dependency => dependenciesMap[dependency]);
+    const snapshotPattern = /-/;
+    return Object.keys(dependenciesMap).filter(key => {
+        const isSnapshot = snapshotPattern.test(dependenciesMap[key]);
+        const isUrl = dependenciesMap[key].startsWith('http');
+        const isLatest = dependenciesMap[key] === 'latest';
+        return isSnapshot || isUrl || isLatest;
+    });
 }
 
-function getDependenciesToInstall(dependenciesMap, packagesToRemove) {
-    return packagesToRemove.map(packageToRemove => `${packageToRemove}@${dependenciesMap[packageToRemove]}`);
+function getDependenciesWithVersion(dependenciesMap, dependenciesToUpdate) {
+    return dependenciesToUpdate.map(packageToRemove => `${packageToRemove}@${dependenciesMap[packageToRemove]}`);
 }
 
-function getCommand(packagesToRemove, dependenciesToInstall, dependencyType) {
-    const packages = packagesToRemove.join(' ');
-    const dependencies = dependenciesToInstall.join(' ');
-    return `yarn remove ${packages} && yarn add ${dependencies} ${dependencyFlags.get(dependencyType)}`;
+function updateDependencies(dependenciesToUpdate, dependenciesWithVersion, dependencyType) {
+    const dependencies = dependenciesToUpdate.join(' ');
+    run(`yarn remove ${dependencies}`);
+
+    const depsWithVersion = dependenciesWithVersion.join(' ');
+    run(`yarn add ${depsWithVersion} ${dependencyFlags.get(dependencyType)}`);
 }
 
 function run(command) {
