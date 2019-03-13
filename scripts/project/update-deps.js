@@ -15,7 +15,7 @@ const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
 const exec = require('child_process').execSync;
 const dependenciesToReinstall = process.argv.slice(2);
-const updateAllSnapshotDependencies = !dependenciesToReinstall.length;
+const shouldUpdateAllSnapshotDependencies = !dependenciesToReinstall.length;
 let shouldUpdateLatestDependencies = true;
 
 const dependencyFlags = new Map([
@@ -53,7 +53,7 @@ if (shouldUpdateLatestDependencies) {
 }
 
 function findDependenciesToUpdate(dependenciesMap) {
-    if (!updateAllSnapshotDependencies) {
+    if (!shouldUpdateAllSnapshotDependencies) {
         return dependenciesToReinstall.filter(dependency => dependenciesMap[dependency]);
     }
 
