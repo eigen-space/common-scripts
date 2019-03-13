@@ -19,14 +19,9 @@
         "scripts"
     ],
     "scripts": {
-        "test:publish": "node ./scripts/project/update-deps.js",
         "deploy:publish": "node ./scripts/ci/publish.js"
     },
     "dependencies": {
-        "minimist": "1.2.0",
-        "minimist-latest": "latest",
-        "minimist-norm": "11.1.1",
-        "minimist-snap": "1.1.1-snap",
-        "minimist-git": "https:asd"
+        "minimist": "1.2.0"
     }
 }
