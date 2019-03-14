@@ -26,7 +26,7 @@ function bundleDts(sourceDir, distDir) {
         .map(file => new RegExp(`^${sourceDir}/(.*)\.d\.ts$`).exec(file))
         .filter(match => Boolean(match))
         .map(match => match[1])
-        .map(file => `export * from './${file}'`)
+        .map(file => `export * from './${file}';`)
         .join('\n');
 
     fs.writeFileSync(`${distDir}/index.d.ts`, statements);
