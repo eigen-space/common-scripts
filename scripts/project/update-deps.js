@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * Script automates reinstall of packages.
  * Packages with snapshot postfix do not change version.
