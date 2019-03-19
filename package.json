@@ -21,6 +21,9 @@
     "scripts": {
         "deploy:publish": "node ./scripts/ci/publish.js"
     },
+    "bin": {
+        "update-deps": "./scripts/project/update-deps.js"
+    },
     "dependencies": {
         "minimist": "1.2.0"
     }
