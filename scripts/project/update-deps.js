@@ -26,8 +26,6 @@ const dependencyFlags = new Map([
     ['peerDependencies', '-P']
 ]);
 
-console.log('dependenciesToReinstall', dependenciesToReinstall);
-
 const dependencyTypes = Array.from(dependencyFlags.keys());
 
 dependencyTypes.forEach(dependencyType => {
