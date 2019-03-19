@@ -26,6 +26,9 @@ const dependencyFlags = new Map([
     ['peerDependencies', '-P']
 ]);
 
+console.log('current directory', currentDir);
+console.log('package.json', packageJson);
+
 const dependencyTypes = Array.from(dependencyFlags.keys());
 
 dependencyTypes.forEach(dependencyType => {
