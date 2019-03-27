@@ -12,7 +12,6 @@ script:
   - git checkout $TRAVIS_BRANCH
   - git remote set-url origin https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
   - chmod +x ./scripts/ci/detect-autocommit.sh
-  - return 1;
   - if ./scripts/ci/detect-autocommit.sh ; then
       npm run deploy:publish;
     fi
