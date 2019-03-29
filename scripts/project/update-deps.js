@@ -12,12 +12,13 @@
  * @type {string}
  */
 
+const fs = require('fs');
 const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
 const exec = require('child_process').execSync;
 const dependenciesToReinstall = process.argv.slice(2);
 const shouldUpdateAllSnapshotDependencies = !dependenciesToReinstall.length;
-let shouldUpdateLatestDependencies = true;
+const latestDependenciesMap = {};
 
 const dependencyFlags = new Map([
     ['dependencies', ''],
@@ -40,17 +41,28 @@ dependencyTypes.forEach(dependencyType => {
         return;
     }
 
+    const latestDependencies = findLatestDependencies(dependenciesMap);
+    if (Object.keys(latestDependencies).length) {
+        latestDependenciesMap[dependencyType] = latestDependencies;
+    }
+
     console.log('dependencies to update', dependenciesToUpdate);
 
     const dependenciesWithVersion = getDependenciesWithVersion(dependenciesMap, dependenciesToUpdate);
     updateDependencies(dependenciesToUpdate, dependenciesWithVersion, dependencyType);
-
-    shouldUpdateLatestDependencies = false;
 });
 
-// If no one package was added then we need explicitly update latest dependencies.
-if (shouldUpdateLatestDependencies) {
-    run('yarn');
+updatePackageJson();
+
+function findLatestDependencies(dependenciesMap) {
+    const latestDependencies = {};
+    Object.keys(dependenciesMap).forEach(key => {
+        if (dependenciesMap[key] === 'latest') {
+            latestDependencies[key] = 'latest';
+        }
+    });
+
+    return latestDependencies;
 }
 
 function findDependenciesToUpdate(dependenciesMap) {
@@ -77,6 +89,21 @@ function updateDependencies(dependenciesToUpdate, dependenciesWithVersion, depen
 
     const depsWithVersion = dependenciesWithVersion.join(' ');
     run(`yarn add ${depsWithVersion} ${dependencyFlags.get(dependencyType)}`);
+}
+
+function updatePackageJson() {
+    const latestDependencyTypes = Object.keys(latestDependenciesMap);
+    if (!latestDependencyTypes.length) {
+        return;
+    }
+
+    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    latestDependencyTypes.forEach(type => {
+        packageJson[type] = { ...packageJson[type], ...latestDependenciesMap[type] }
+    });
+
+    const packageJsonStringified = JSON.stringify(packageJson, undefined, 4);
+    fs.writeFileSync('package.json', packageJsonStringified);
 }
 
 function run(command) {
