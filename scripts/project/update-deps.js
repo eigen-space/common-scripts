@@ -42,27 +42,18 @@ dependencyTypes.forEach(dependencyType => {
     }
 
     const latestDependencies = findLatestDependencies(dependenciesMap);
-    if (Object.keys(latestDependencies).length) {
-        latestDependenciesMap[dependencyType] = latestDependencies;
-    }
 
     console.log('dependencies to update', dependenciesToUpdate);
 
     const dependenciesWithVersion = getDependenciesWithVersion(dependenciesMap, dependenciesToUpdate);
     updateDependencies(dependenciesToUpdate, dependenciesWithVersion, dependencyType);
+    restoreLatestDependencies(dependencyType, latestDependencies);
 });
 
-restoreLatestDependencies();
 
 function findLatestDependencies(dependenciesMap) {
-    const latestDependencies = {};
-    Object.keys(dependenciesMap).forEach(key => {
-        if (dependenciesMap[key] === 'latest') {
-            latestDependencies[key] = 'latest';
-        }
-    });
-
-    return latestDependencies;
+    return Object.keys(dependenciesMap)
+        .filter(key => dependenciesMap[key] === 'latest');
 }
 
 function findDependenciesToUpdate(dependenciesMap) {
@@ -71,12 +62,13 @@ function findDependenciesToUpdate(dependenciesMap) {
     }
 
     const snapshotPattern = /-/;
-    return Object.keys(dependenciesMap).filter(key => {
-        const isSnapshot = snapshotPattern.test(dependenciesMap[key]);
-        const isUrl = dependenciesMap[key].startsWith('http');
-        const isLatest = dependenciesMap[key] === 'latest';
-        return isSnapshot || isUrl || isLatest;
-    });
+    return Object.keys(dependenciesMap)
+        .filter(key => {
+            const isSnapshot = snapshotPattern.test(dependenciesMap[key]);
+            const isUrl = dependenciesMap[key].startsWith('http');
+            const isLatest = dependenciesMap[key] === 'latest';
+            return isSnapshot || isUrl || isLatest;
+        });
 }
 
 function getDependenciesWithVersion(dependenciesMap, dependenciesToUpdate) {
@@ -91,16 +83,17 @@ function updateDependencies(dependenciesToUpdate, dependenciesWithVersion, depen
     run(`yarn add ${depsWithVersion} ${dependencyFlags.get(dependencyType)}`);
 }
 
-function restoreLatestDependencies() {
-    const latestDependencyTypes = Object.keys(latestDependenciesMap);
-    if (!latestDependencyTypes.length) {
+function restoreLatestDependencies(dependencyType, latestDependencies) {
+    if (!latestDependencies.length) {
         return;
     }
 
     const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-    latestDependencyTypes.forEach(type => {
-        packageJson[type] = { ...packageJson[type], ...latestDependenciesMap[type] }
-    });
+    const latestDependenciesMap = latestDependencies.reduce((acc, curr) => {
+        acc[curr] = 'latest';
+        return acc;
+    }, {});
+    packageJson[dependencyType] = { ...packageJson[dependencyType], ...latestDependenciesMap };
 
     const packageJsonStringified = JSON.stringify(packageJson, undefined, 4);
     fs.writeFileSync('package.json', packageJsonStringified);
