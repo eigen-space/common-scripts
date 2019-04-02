@@ -52,7 +52,7 @@ dependencyTypes.forEach(dependencyType => {
     updateDependencies(dependenciesToUpdate, dependenciesWithVersion, dependencyType);
 });
 
-updatePackageJson();
+restoreLatestDependencies();
 
 function findLatestDependencies(dependenciesMap) {
     const latestDependencies = {};
@@ -91,7 +91,7 @@ function updateDependencies(dependenciesToUpdate, dependenciesWithVersion, depen
     run(`yarn add ${depsWithVersion} ${dependencyFlags.get(dependencyType)}`);
 }
 
-function updatePackageJson() {
+function restoreLatestDependencies() {
     const latestDependencyTypes = Object.keys(latestDependenciesMap);
     if (!latestDependencyTypes.length) {
         return;
