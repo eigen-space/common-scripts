@@ -3,5 +3,6 @@ const copy = require('./scripts/common/copy');
 
 module.exports = {
     CommonScripts,
-    copy
+    copy,
+    parseProcessArgs
 };
