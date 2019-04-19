@@ -15,22 +15,24 @@ const lastCommit = run('git log -1 --oneline');
 
 // Different commit messages for different merge cases
 const matcher1 = /Merge branch '.+'$/g;
-const matcher2 = /Merge pull request .+ from .+$/g;
-const matcher3 = /Merge remote-tracking branch 'origin\/.+' into (.+)$/g;
-const matcher4 = /Merge branch '.+' into (.+)$/g;
+const matcher2 = /Merge remote-tracking branch '.+'$/g;
+const matcher3 = /Merge pull request .+ from .+$/g;
+const matcher4 = /Merge remote-tracking branch 'origin\/.+' into (.+)$/g;
+const matcher5 = /Merge branch '.+' into (.+)$/g;
 
 if (!matcher1.test(lastCommit)
     && !matcher2.test(lastCommit)
     && !matcher3.test(lastCommit)
-    && !matcher4.test(lastCommit)) {
+    && !matcher4.test(lastCommit)
+    && !matcher5.test(lastCommit)) {
     returnResult(autoCalculatedBranchName);
 }
 
-if (matcher1.test(lastCommit) || matcher2.test(lastCommit)) {
+if (matcher1.test(lastCommit) || matcher2.test(lastCommit) || matcher3.test(lastCommit)) {
     returnResult('origin/master');
 }
 
-const intoBranches = [matcher3, matcher4].map(matcher => lastCommit.match(matcher))
+const intoBranches = [matcher4, matcher5].map(matcher => lastCommit.match(matcher))
     .filter(match => Boolean(match))
     .map(match => match[0]);
 
