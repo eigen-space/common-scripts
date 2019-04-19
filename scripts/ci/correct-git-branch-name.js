@@ -14,25 +14,28 @@ if (!Boolean(autoCalculatedBranchName)) {
 const lastCommit = run('git log -1 --oneline');
 
 // Different commit messages for different merge cases
-const matcher1 = /Merge branch '.+'$/g;
-const matcher2 = /Merge remote-tracking branch '.+'$/g;
-const matcher3 = /Merge pull request .+ from .+$/g;
-const matcher4 = /Merge remote-tracking branch 'origin\/.+' into (.+)$/g;
-const matcher5 = /Merge branch '.+' into (.+)$/g;
+const localBranchIntoMaster = /Merge branch '.+'$/g;
+const remoteBranchIntoMaster = /Merge remote-tracking branch '.+'$/g;
+const pullRequestToMaster = /Merge pull request .+ from .+$/g;
+const remoteBranchIntoAnyBranch = /Merge remote-tracking branch 'origin\/.+' into (.+)$/g;
+const localBranchIntoAnyBranch = /Merge branch '.+' into (.+)$/g;
 
-if (!matcher1.test(lastCommit)
-    && !matcher2.test(lastCommit)
-    && !matcher3.test(lastCommit)
-    && !matcher4.test(lastCommit)
-    && !matcher5.test(lastCommit)) {
+if (!localBranchIntoMaster.test(lastCommit)
+    && !remoteBranchIntoMaster.test(lastCommit)
+    && !pullRequestToMaster.test(lastCommit)
+    && !remoteBranchIntoAnyBranch.test(lastCommit)
+    && !localBranchIntoAnyBranch.test(lastCommit)) {
     returnResult(autoCalculatedBranchName);
 }
 
-if (matcher1.test(lastCommit) || matcher2.test(lastCommit) || matcher3.test(lastCommit)) {
+if (localBranchIntoMaster.test(lastCommit)
+    || remoteBranchIntoMaster.test(lastCommit)
+    || pullRequestToMaster.test(lastCommit)) {
     returnResult('origin/master');
 }
 
-const intoBranches = [matcher4, matcher5].map(matcher => lastCommit.match(matcher))
+const intoBranches = [remoteBranchIntoAnyBranch, localBranchIntoAnyBranch]
+    .map(matcher => lastCommit.match(matcher))
     .filter(match => Boolean(match))
     .map(match => match[0]);
 
