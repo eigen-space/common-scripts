@@ -18,7 +18,7 @@ if (!mergeCommitNameMatcher.test(lastCommit)) {
     returnResult(autoCalculatedBranchName);
 }
 
-returnResult(autoCalculatedBranchName);
+returnResult(`origin/${autoCalculatedBranchName}`);
 
 function run(command) {
     console.log('run command:', command);
