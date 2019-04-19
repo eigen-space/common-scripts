@@ -29,7 +29,8 @@
         }
     },
     "bin": {
-        "update-deps": "./scripts/project/update-deps.js"
+        "update-deps": "./scripts/project/update-deps.js",
+        "correct-git-branch-name": "./scripts/ci/correct-git-branch-name.js"
     },
     "dependencies": {
         "minimist": "1.2.0"
