@@ -13,12 +13,35 @@ if (!Boolean(autoCalculatedBranchName)) {
 
 const lastCommit = run('git log -1 --oneline');
 
-const mergeCommitNameMatcher = /Merge remote-tracking branch 'origin\/.+' into (.+)$/g;
-if (!mergeCommitNameMatcher.test(lastCommit)) {
+// Different commit messages for different merge cases
+const matcher1 = /Merge branch '.+'$/g;
+const matcher2 = /Merge pull request .+ from .+$/g;
+const matcher3 = /Merge remote-tracking branch 'origin\/.+' into (.+)$/g;
+const matcher4 = /Merge branch '.+' into (.+)$/g;
+
+if (!matcher1.test(lastCommit)
+    && !matcher2.test(lastCommit)
+    && !matcher3.test(lastCommit)
+    && !matcher4.test(lastCommit)) {
     returnResult(autoCalculatedBranchName);
 }
 
-returnResult(`origin/${autoCalculatedBranchName}`);
+if (matcher1.test(lastCommit) || matcher2.test(lastCommit)) {
+    returnResult('origin/master');
+}
+
+const intoBranches = [matcher3, matcher4].map(matcher => lastCommit.match(matcher))
+    .filter(match => Boolean(match))
+    .map(match => match[0]);
+
+if (intoBranches.length !== 1) {
+    console.log('Have problem with matchers!');
+    process.exit(1);
+}
+
+const branch = intoBranches[0];
+
+returnResult(branch.startsWith('origin/') ? branch : `origin/${branch}`);
 
 function run(command) {
     console.log('run command:', command);
