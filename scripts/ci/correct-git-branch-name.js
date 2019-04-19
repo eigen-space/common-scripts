@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const argv = require('../common/parse-process-args')(process.argv.slice(2));
 const childProcess = require('child_process');
 const exec = childProcess.execSync;
