@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+/**
+ * The script allows you to correct the name of the git branch, incorrectly computed jenkins.
+ *
+ * Parameters:
+ *  --branch      (required) You must set an automatically calculated branch name.
+ *
+ *  @type {string}
+ */
 
 const argv = require('../common/parse-process-args')(process.argv.slice(2));
 const childProcess = require('child_process');
@@ -7,8 +15,7 @@ const exec = childProcess.execSync;
 const autoCalculatedBranchName = (argv.get('branch') || [])[0];
 
 if (!Boolean(autoCalculatedBranchName)) {
-    console.log('Must pass auto calculated branch name as run param with key "branch"');
-    process.exit(1);
+    throwError('Must pass auto calculated branch name as run param with key "branch"');
 }
 
 const lastCommit = run('git log -1 --oneline');
@@ -40,8 +47,7 @@ const intoBranches = [remoteBranchIntoAnyBranch, localBranchIntoAnyBranch]
     .map(match => match[0]);
 
 if (intoBranches.length !== 1) {
-    console.log('Have problem with matchers!');
-    process.exit(1);
+    throwError('Have problem with matchers!');
 }
 
 const branch = intoBranches[0];
@@ -58,4 +64,9 @@ function run(command) {
 function returnResult(result) {
     console.log(result);
     process.exit(0);
+}
+
+function throwError(error) {
+    console.error(error);
+    process.exit(1);
 }
