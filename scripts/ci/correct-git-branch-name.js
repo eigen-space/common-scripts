@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 /**
- * The script allows you to correct the name of the git branch, incorrectly computed jenkins.
+ * The script allows you to correct the name of the git branch,
+ * incorrectly computed by jenkins.
+ *
+ * See details:
+ *  https://issues.jenkins-ci.org/browse/JENKINS-33984?focusedCommentId=318584&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-318584
  *
  * Parameters:
  *  --branch      (required) You must set an automatically calculated branch name.
