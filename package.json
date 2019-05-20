@@ -1,7 +1,7 @@
 {
     "name": "@eigenspace/helper-scripts",
-    "version": "1.0.74",
-    "main": "index.js",
+    "version": "1.0.73",
+    "main": "src/index.ts",
     "repository": "https://github.com/eigen-space/common-scripts.git",
     "author": "Anton Kalashnikov <tohasan@yandex.ru>",
     "contributors": [
@@ -19,24 +19,44 @@
         "scripts"
     ],
     "scripts": {
+        "build": "yarn compile &&  node ./dev/scripts/copy-assets.js",
+        "compile": "tsc",
+        "lint": "tslint --project tsconfig.json && yarn lint:markdown",
+        "lint:fix": "tslint --project tsconfig.json --fix",
         "lint:markdown": "node ./node_modules/@eigenspace/codestyle/scripts/markdown-lint.js",
-        "hooks:pre-push": "yarn lint:markdown",
-        "deploy:publish": "node ./scripts/ci/publish.js"
+        "test": "jest",
+        "test:ci": "jest --ci",
+        "hooks:pre-push": "yarn lint && yarn test",
+        "deploy:publish": "node ./dist/scripts/ci/publish.js"
     },
     "husky": {
         "hooks": {
             "pre-push": "yarn hooks:pre-push"
         }
     },
+    "lint-staged": {
+        "*.{ts,tsx}": [
+            "yarn lint:fix",
+            "git add"
+        ]
+    },
     "bin": {
-        "update-deps": "./scripts/project/update-deps.js",
-        "correct-git-branch-name": "./scripts/ci/correct-git-branch-name.js"
+        "update-deps": "dist/scripts/project/update-deps.js",
+        "correct-git-branch-name": "dist/scripts/ci/correct-git-branch-name.js"
     },
     "dependencies": {
         "minimist": "1.2.0"
     },
     "devDependencies": {
         "@eigenspace/codestyle": "latest",
-        "husky": "1.3.1"
+        "@types/jest": "22.2.2",
+        "@types/minimist": "1.2.0",
+        "@types/node": "11.9.5",
+        "husky": "1.3.1",
+        "jest": "24.7.1",
+        "lint-staged": "8.1.5",
+        "ts-jest": "24.0.2",
+        "tslint": "5.16.0",
+        "typescript": "3.4.5"
     }
 }
