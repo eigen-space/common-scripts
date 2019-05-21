@@ -3,18 +3,20 @@
  *
  * Parameters:
  *  --searchDir Directory where script will do search
+ *
  *  @type {string}
  *
  *  --pattern RegExp pattern without slashes (/). For example, styles.d.ts$ becomes /styles.d.ts$/
+ *
  *  @type {string}
  */
 
-const { walkThrough } = require('../common/common');
-const path = require('path');
-const fs = require('fs');
+import { walkThrough } from '../..';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as minimist from 'minimist';
 
-const argv = require('minimist')(process.argv.slice(2));
-
+const argv = minimist(process.argv.slice(2));
 const searchDir = argv.searchDir;
 const pattern = argv.pattern;
 
@@ -26,7 +28,7 @@ const regExp = new RegExp(pattern);
 
 walkThrough(
     searchDir,
-    (dir, file) => {
+    (dir: string, file: string) => {
         const concatenatedPath = path.join(dir, file);
         if (fs.statSync(concatenatedPath).isFile() && regExp.test(file.toString())) {
             fs.unlinkSync(concatenatedPath);
