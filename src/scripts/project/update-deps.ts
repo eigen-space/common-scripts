@@ -12,13 +12,16 @@
  * @type {string}
  */
 
-const fs = require('fs');
+import * as fs from 'fs';
+import * as childProcess from 'child_process';
+import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
+
 const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
-const exec = require('child_process').execSync;
+const exec = childProcess.execSync;
+
 const dependenciesToReinstall = process.argv.slice(2);
-const shouldUpdateAllSnapshotDependencies = !dependenciesToReinstall.length;
-const latestDependenciesMap = {};
+const isFullUpdate = !Boolean(dependenciesToReinstall.length);
 
 const dependencyFlags = new Map([
     ['dependencies', ''],
@@ -50,32 +53,36 @@ dependencyTypes.forEach(dependencyType => {
     restoreLatestDependencies(dependencyType, latestDependencies);
 });
 
-
-function findLatestDependencies(dependenciesMap) {
-    return Object.keys(dependenciesMap)
-        .filter(key => dependenciesMap[key] === 'latest');
+function findLatestDependencies(dependencyStore: Dictionary<string>): string[] {
+    return Object.keys(dependencyStore)
+        .filter(key => dependencyStore[key] === 'latest');
 }
 
-function findDependenciesToUpdate(dependenciesMap) {
-    if (!shouldUpdateAllSnapshotDependencies) {
-        return dependenciesToReinstall.filter(dependency => dependenciesMap[dependency]);
+function findDependenciesToUpdate(dependencyStore: Dictionary<string>): string[] {
+    if (!isFullUpdate) {
+        return dependenciesToReinstall.filter(dependency => dependencyStore[dependency]);
     }
 
     const snapshotPattern = /-/;
-    return Object.keys(dependenciesMap)
+    return Object.keys(dependencyStore)
         .filter(key => {
-            const isSnapshot = snapshotPattern.test(dependenciesMap[key]);
-            const isUrl = dependenciesMap[key].startsWith('http');
-            const isLatest = dependenciesMap[key] === 'latest';
+            const isSnapshot = snapshotPattern.test(dependencyStore[key]);
+            const isUrl = dependencyStore[key].startsWith('http');
+            const isLatest = dependencyStore[key] === 'latest';
             return isSnapshot || isUrl || isLatest;
         });
 }
 
-function getDependenciesWithVersion(dependenciesMap, dependenciesToUpdate) {
-    return dependenciesToUpdate.map(packageToRemove => `${packageToRemove}@${dependenciesMap[packageToRemove]}`);
+function getDependenciesWithVersion(dependencyStore: Dictionary<string>, dependenciesToUpdate: string[]): string[] {
+    return dependenciesToUpdate.map(packageToRemove => {
+        return `${packageToRemove}@${dependencyStore[packageToRemove]}`;
+    });
 }
 
-function updateDependencies(dependenciesToUpdate, dependenciesWithVersion, dependencyType) {
+function updateDependencies(
+    dependenciesToUpdate: string[],
+    dependenciesWithVersion: string[],
+    dependencyType: string): void {
     const dependencies = dependenciesToUpdate.join(' ');
     run(`yarn remove ${dependencies}`);
 
@@ -83,23 +90,24 @@ function updateDependencies(dependenciesToUpdate, dependenciesWithVersion, depen
     run(`yarn add ${depsWithVersion} ${dependencyFlags.get(dependencyType)}`);
 }
 
-function restoreLatestDependencies(dependencyType, latestDependencies) {
+function restoreLatestDependencies(dependencyType: string, latestDependencies: string[]): void {
     if (!latestDependencies.length) {
         return;
     }
 
-    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    const parsedPackageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
     const latestDependenciesMap = latestDependencies.reduce((acc, curr) => {
         acc[curr] = 'latest';
         return acc;
-    }, {});
-    packageJson[dependencyType] = { ...packageJson[dependencyType], ...latestDependenciesMap };
+    }, {} as Dictionary<string>);
+    parsedPackageJson[dependencyType] = { ...parsedPackageJson[dependencyType], ...latestDependenciesMap };
 
-    const packageJsonStringified = JSON.stringify(packageJson, undefined, 4);
+    const indent = 4;
+    const packageJsonStringified = JSON.stringify(parsedPackageJson, undefined, indent);
     fs.writeFileSync('package.json', packageJsonStringified);
 }
 
-function run(command) {
+function run(command: string): void {
     console.log('run command:', command);
     const stdout = exec(command, { encoding: 'utf8' });
     console.log(stdout);
