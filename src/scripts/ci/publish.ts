@@ -12,12 +12,15 @@
  * @see {@link https://www.notion.so/arrivalms/Versioning-5bf1876eb2f142339d719f818cc2250c}
  */
 
+import * as fs from 'fs';
+import * as childProcess from 'child_process';
+import * as minimist from 'minimist';
+import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
+
 const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
-const fs = require('fs');
-const childProcess = require('child_process');
 const exec = childProcess.execSync;
-const argv = require('minimist')(process.argv.slice(2));
+const argv = minimist(process.argv.slice(2));
 
 // Get dependency suffix (branch name)
 const { name, version } = packageJson;
@@ -25,14 +28,18 @@ const dist = argv.dist || fs.existsSync('./dist') && './dist' || currentDir;
 
 let currentBranch = getCurrentBranchName();
 
+if (!Boolean(currentBranch)) {
+    console.log('Current branch is undefined!');
+    process.exit(1);
+}
+
 console.log('branch:', currentBranch);
 console.log('package to publish:', dist);
 
 // We consider snapshot as any non-master dependency version.
-// Every snapshot dependency version should be prerelease version
-// that has suffix contains branch name
+// Every snapshot dependency version should be prerelease version that has suffix contains branch name
 const isSnapshotVersion = currentBranch !== 'master';
-const suffix = isSnapshotVersion ? `-${currentBranch}` : '';
+const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
 const fullVersion = `${name}@${version}${suffix}`;
 
 // If branch name is not master, i.e. there is no suffix
@@ -65,34 +72,35 @@ if (isSnapshotVersion) {
 // Functions
 // -----------
 
-function run(command) {
+function run(command: string): string {
     console.log('run command:', command);
     const stdout = exec(command, { encoding: 'utf8' });
     console.log(stdout);
     return stdout;
 }
 
-function publish(version) {
-    if (version) {
-        setVersionToDistPackage(version);
+function publish(packageVersion?: string): void {
+    if (packageVersion) {
+        setVersionToDistPackage(packageVersion);
     }
 
     run(`npm publish ${dist}`);
 }
 
-function incrementVersionAndPush() {
+function incrementVersionAndPush(): void {
     // We getting new package.json to get always actual package.json for case when we change our branch.
     // For example, we move from master to dev. There at dev branch package.json will be different.
-    const packageJson = readJsonFile('package.json');
+    const parsedPackageJsonFile = readJsonFile('package.json');
     // Same with version. Always getting actual version of package.
-    const { version } = packageJson;
+    const { version: packageVersion } = parsedPackageJsonFile;
 
-    const [major, minor, patch] = version.split('.');
+    const [major, minor, patch] = packageVersion.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
     console.log('incremented version:', incrementedVersion);
 
-    packageJson.version = incrementedVersion;
-    const packageJsonStringified = JSON.stringify(packageJson, undefined, 4);
+    parsedPackageJsonFile.version = incrementedVersion;
+    const indent = 4;
+    const packageJsonStringified = JSON.stringify(parsedPackageJsonFile, undefined, indent);
     fs.writeFileSync('package.json', packageJsonStringified);
     fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
@@ -100,35 +108,41 @@ function incrementVersionAndPush() {
     run(`git push --no-verify origin ${currentBranch}`);
 }
 
-function setVersionToDistPackage(version) {
-    console.log('update version in dist package.json to:', version);
+function setVersionToDistPackage(packageVersion: string): void {
+    console.log('update version in dist package.json to:', packageVersion);
 
-    const packageJson = readJsonFile(`${dist}/package.json`);
-    packageJson.version = version;
+    const distPackageJsonFile = readJsonFile(`${dist}/package.json`);
+    distPackageJsonFile.version = packageVersion;
 
-    const packageJsonStringified = JSON.stringify(packageJson, undefined, 4);
+    const indent = 4;
+    const packageJsonStringified = JSON.stringify(distPackageJsonFile, undefined, indent);
     fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
     console.log('version in dist package.json was successfully updated');
 }
 
-function checkout(branchName) {
+function checkout(branchName: string): void {
     currentBranch = branchName;
     run(`git fetch origin --progress --prune`);
     run(`git checkout --track origin/${branchName}`);
 }
 
-function merge(branchName) {
-    run(`git merge --no-ff ${branchName}`)
+function merge(branchName: string): void {
+    run(`git merge --no-ff ${branchName}`);
 }
 
-function getCurrentBranchName() {
-    const branchList = run('git branch');
+function getCurrentBranchName(): string | undefined {
+    const branchList: string = run('git branch');
     const branch = branchList.split('\n')
-        .find(branch => branch.startsWith('*'));
-    return branch.replace('* ', '');
+        .find(branchName => branchName.startsWith('*'));
+
+    return (branch || '').replace('* ', '');
 }
 
-function readJsonFile(filename) {
+function readJsonFile(filename: string): Dictionary<string> {
     return JSON.parse(fs.readFileSync(filename, 'utf8'));
+}
+
+function prepareSuffix(branchName: string): string {
+    return branchName.replace(/\//g, '-');
 }

@@ -1,5 +1,11 @@
 # idea
 /.idea
 
+#build
+/dist
+
 # dependencies
 /node_modules
+
+#jest
+/coverage
