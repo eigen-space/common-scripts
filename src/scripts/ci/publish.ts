@@ -28,13 +28,18 @@ const dist = argv.dist || fs.existsSync('./dist') && './dist' || currentDir;
 
 let currentBranch = getCurrentBranchName();
 
+if (!Boolean(currentBranch)) {
+    console.log('Current branch is undefined!');
+    process.exit(1);
+}
+
 console.log('branch:', currentBranch);
 console.log('package to publish:', dist);
 
 // We consider snapshot as any non-master dependency version.
 // Every snapshot dependency version should be prerelease version that has suffix contains branch name
 const isSnapshotVersion = currentBranch !== 'master';
-const suffix = isSnapshotVersion ? `-${currentBranch}` : '';
+const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
 const fullVersion = `${name}@${version}${suffix}`;
 
 // If branch name is not master, i.e. there is no suffix
@@ -126,7 +131,7 @@ function merge(branchName: string): void {
     run(`git merge --no-ff ${branchName}`);
 }
 
-function getCurrentBranchName(): string| undefined {
+function getCurrentBranchName(): string | undefined {
     const branchList: string = run('git branch');
     const branch = branchList.split('\n')
         .find(branchName => branchName.startsWith('*'));
@@ -136,4 +141,8 @@ function getCurrentBranchName(): string| undefined {
 
 function readJsonFile(filename: string): Dictionary<string> {
     return JSON.parse(fs.readFileSync(filename, 'utf8'));
+}
+
+function prepareSuffix(branchName: string): string {
+    return branchName.replace(/\//g, '-');
 }
