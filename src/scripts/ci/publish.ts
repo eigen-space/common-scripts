@@ -17,6 +17,8 @@ import * as childProcess from 'child_process';
 import * as minimist from 'minimist';
 import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
 
+const exists = require('npm-exists');
+
 const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
 const exec = childProcess.execSync;
@@ -56,17 +58,19 @@ if (isSnapshotVersion) {
 
 } else {
     console.log('start publishing release package...');
-    // If it is production version (master), we check it exists in npm registry
-    const versionInRegistry = hasProjectInRegistry(name) && run(`npm view ${fullVersion} version`);
-    if (versionInRegistry) {
-        console.log(`package '${fullVersion}' exists in registry`);
-        incrementVersionAndPush();
-    }
+    exists(name).then((projectExists: Boolean) => {
+        // If it is production version (master), we check it exists in npm registry
+        const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
+        if (versionInRegistry) {
+            console.log(`package '${fullVersion}' exists in registry`);
+            incrementVersionAndPush();
+        }
 
-    publish();
-    checkout('dev');
-    merge('master');
-    incrementVersionAndPush();
+        publish();
+        checkout('dev');
+        merge('master');
+        incrementVersionAndPush();
+    });
 }
 
 // Functions
@@ -145,16 +149,4 @@ function readJsonFile(filename: string): Dictionary<string> {
 
 function prepareSuffix(rawSuffix: string): string {
     return rawSuffix.replace(/\//g, '-');
-}
-
-function hasProjectInRegistry(projectName: string): boolean {
-    let isNewProject = false;
-
-    try {
-        run(`npm view ${projectName}`);
-    } catch {
-        isNewProject = true;
-    }
-
-    return isNewProject;
 }
