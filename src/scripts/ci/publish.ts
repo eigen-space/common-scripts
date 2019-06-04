@@ -57,7 +57,7 @@ if (isSnapshotVersion) {
 } else {
     console.log('start publishing release package...');
     // If it is production version (master), we check it exists in npm registry
-    const versionInRegistry = run(`npm view ${fullVersion} version`);
+    const versionInRegistry = hasProjectInRegistry(name) && run(`npm view ${fullVersion} version`);
     if (versionInRegistry) {
         console.log(`package '${fullVersion}' exists in registry`);
         incrementVersionAndPush();
@@ -143,6 +143,18 @@ function readJsonFile(filename: string): Dictionary<string> {
     return JSON.parse(fs.readFileSync(filename, 'utf8'));
 }
 
-function prepareSuffix(branchName: string): string {
-    return branchName.replace(/\//g, '-');
+function prepareSuffix(rawSuffix: string): string {
+    return rawSuffix.replace(/\//g, '-');
+}
+
+function hasProjectInRegistry(projectName: string): boolean {
+    let isNewProject = false;
+
+    try {
+        run(`npm view ${projectName}`);
+    } catch {
+        isNewProject = true;
+    }
+
+    return isNewProject;
 }
