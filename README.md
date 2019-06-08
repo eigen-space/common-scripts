@@ -5,6 +5,7 @@ This package contains common scripts which are very helpful in developing other 
 # Why do we have that dependencies?
 
 * `minimist` - argument parser.
+* `npm-exists` - to check exists npm package.
 
 # Why do we have that dev dependencies?
 

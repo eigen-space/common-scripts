@@ -1,6 +1,6 @@
 {
     "name": "@eigenspace/helper-scripts",
-    "version": "1.0.76",
+    "version": "1.0.78",
     "main": "index.js",
     "repository": "https://github.com/eigen-space/common-scripts.git",
     "author": "Anton Kalashnikov <tohasan@yandex.ru>",
@@ -47,7 +47,8 @@
         "correct-git-branch-name": "./scripts/ci/correct-git-branch-name.js"
     },
     "dependencies": {
-        "minimist": "1.2.0"
+        "minimist": "1.2.0",
+        "npm-exists": "1.0.1"
     },
     "devDependencies": {
         "@eigenspace/codestyle": "latest",
