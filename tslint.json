@@ -1,5 +1,8 @@
 {
     "extends": [
         "@eigenspace/codestyle/tslint.json"
-    ]
+    ],
+    "rules": {
+        "no-non-null-assertion": false
+    }
 }
