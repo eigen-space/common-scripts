@@ -1,22 +1,20 @@
 /**
+ * A type that returns a `get` method after attempting to process parameters.
+ */
+export type ArgStore = Map<string, string | string[] | boolean>;
+
+/**
  * Utility for parsing script startup parameters.
  *
- * Types of script startup parameters:
- *
- * keylessValue - param without key.
- * --key=value - primitive type value with key.
- * --collectionKey[]=value1,value2 - array type value with key. Values ​​are comma separated.
+ * Types of script parameters:
+ *      keylessValue - param without key.
+ *      --key=value - primitive type value with key.
+ *      --collectionKey[]=value1,value2 - array type value with key. Values ​​are comma separated.
  *
  * Example:
  *
  * node script.js keylessValue1 --key=value --collectionKey[]=value1,value2
  */
-
-/**
- * A type that returns a `get` method after attempting to process parameters.
- */
-export type ArgStoreType = Map<string, string | string[] | boolean>;
-
 export class ArgsParser {
     static DEFAULT_KEY = '_';
 
@@ -28,11 +26,10 @@ export class ArgsParser {
     /**
      * Get parsed arguments.
      *
-     * @param {string[]} rawArgs - collection of raw arguments.
-     * @return {Map<string, string | string[] | boolean>} - args store.
+     * @param rawArgs Collection of raw arguments.
+     * @return Args store.
      */
-    get(rawArgs: string[]): ArgStoreType {
-
+    get(rawArgs: string[]): ArgStore {
         const keylessValues = rawArgs.filter(arg => !arg.startsWith(ArgsParser.KEY_PREFIX));
         const valuesWithKey = rawArgs.filter(arg => arg.startsWith(ArgsParser.KEY_PREFIX));
 
@@ -40,28 +37,25 @@ export class ArgsParser {
         const booleanEntries = booleanValues.map(key => [this.getKeyFromRawKey(key), true]);
 
         const expressions = valuesWithKey.filter(arg => this.isExpression(arg));
-        const exprEntries = expressions.map(expr => expr.split(ArgsParser.EXPRESSION_SIGN))
-            .map(entry => {
-                const [rawKey, rawValue] = entry;
+        const expressionEntries = expressions.map(expr => expr.split(ArgsParser.EXPRESSION_SIGN))
+            .map(([rawKey, rawValue]) => {
                 const isListType = this.isListTypeExpression(rawKey);
-                const key = this.getKeyFromRawKey(entry[0]);
+                const key = this.getKeyFromRawKey(rawKey);
                 const value = isListType ? rawValue.split(ArgsParser.LIST_VALUE_SEPARATOR) : rawValue;
                 return [key, value];
             });
 
         return new Map([
-            [ArgsParser.DEFAULT_KEY, keylessValues],
-            ...booleanEntries as [string, boolean][],
-            ...exprEntries as [string, string[] | string][]
+            ...(keylessValues.length ? [[ArgsParser.DEFAULT_KEY, keylessValues]] : []),
+            ...booleanEntries,
+            ...expressionEntries
         ] as [string, boolean | string | string[]][]);
     }
 
     // noinspection JSMethodCanBeStatic
     private getKeyFromRawKey(rawKey: string): string {
-        const isListType = this.isListTypeExpression(rawKey);
-        const lastTwoSymbols = 2;
-        const key = isListType ? rawKey.slice(0, -lastTwoSymbols) : rawKey;
-        return key.match(/^-+(.*)/)![1] as string;
+        return rawKey.replace(/^-+/, '')
+            .replace(ArgsParser.LIST_TYPE_KEY, '');
     }
 
     // noinspection JSMethodCanBeStatic
