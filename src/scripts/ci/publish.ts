@@ -4,6 +4,10 @@
  * We name dependency as `snapshot` if its version looks like: `x.x.x-<branch-name`.
  * We name dependency as `release` if its version does not have suffix: `x.x.x`.
  *
+ * Environmental requirements.
+ * It is necessary that at the time of launching the script in the root of the project there was a .npmrc file
+ * containing an access token at the time of launching the script.
+ *
  * Parameters:
  *  --dist      (optional)  You can specify destination of package you want to publish.
  *                          Default: './dist' or current directory if no ./dist is there.
