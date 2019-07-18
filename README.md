@@ -19,4 +19,8 @@ This package contains common scripts which are very helpful in developing other 
 * `typescript` - is a superset of JavaScript that have static type-checking and ECMAScript features.
 * `lint-staged` - used for configure linters against staged git files.
 
+# CI
 
+**Important!**
+
+Travis creates the .npmrc file during ci startup. This file contains the access token to the npm repository.
