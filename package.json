@@ -51,7 +51,7 @@
         "npm-exists": "1.0.1"
     },
     "devDependencies": {
-        "@eigenspace/codestyle": "latest",
+        "@eigenspace/codestyle": "1.1.56",
         "@eigenspace/common-types": "0.0.5",
         "@types/jest": "22.2.2",
         "@types/minimist": "1.2.0",

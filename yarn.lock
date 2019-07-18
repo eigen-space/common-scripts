@@ -146,7 +146,7 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@eigenspace/codestyle@latest":
+"@eigenspace/codestyle@1.1.56":
   version "1.1.56"
   resolved "https://registry.yarnpkg.com/@eigenspace/codestyle/-/codestyle-1.1.56.tgz#c7e8f34fbf8a4c3ec63dfe5d55ed9a382bac6741"
   integrity sha512-1AD+fiwM8eEA6zdrkc9vQUBYL0vcuWEOrbfKbv7zwegSXDRo5jugqkAHloHFwNcFbiXUfhkfvB4hJMdXtz/C+Q==
