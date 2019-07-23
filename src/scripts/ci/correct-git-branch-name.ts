@@ -58,18 +58,22 @@ const branch = intoBranches[0];
 returnResult(branch.startsWith('origin/') ? branch : `origin/${branch}`);
 
 function run(command: string): string {
+    // eslint-disable-next-line no-console
     console.log('run command:', command);
     const stdout = exec(command, { encoding: 'utf8' });
+    // eslint-disable-next-line no-console
     console.log(stdout);
     return stdout;
 }
 
 function returnResult(result: string): void {
+    // eslint-disable-next-line no-console
     console.log(result);
     process.exit(0);
 }
 
 function throwError(error: string): void {
+    // eslint-disable-next-line no-console
     console.error(error);
     process.exit(1);
 }
