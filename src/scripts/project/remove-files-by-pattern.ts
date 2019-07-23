@@ -32,6 +32,7 @@ walkThrough(
         const concatenatedPath = path.join(dir, file);
         if (fs.statSync(concatenatedPath).isFile() && regExp.test(file.toString())) {
             fs.unlinkSync(concatenatedPath);
+            // eslint-disable-next-line no-console
             console.log('removed file:', file);
         }
     }

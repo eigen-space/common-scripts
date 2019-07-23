@@ -1,5 +1,5 @@
 {
-    "extends": "@eigenspace/codestyle/base.tsconfig.json",
+    "extends": "@eigenspace/codestyle/configs/typescript/base.tsconfig.json",
     "compilerOptions": {
         "moduleResolution": "node",
         "module": "commonjs",
