@@ -46,6 +46,7 @@ dependencyTypes.forEach(dependencyType => {
 
     const latestDependencies = findLatestDependencies(dependenciesMap);
 
+    // eslint-disable-next-line no-console
     console.log('dependencies to update', dependenciesToUpdate);
 
     const dependenciesWithVersion = getDependenciesWithVersion(dependenciesMap, dependenciesToUpdate);
@@ -74,9 +75,7 @@ function findDependenciesToUpdate(dependencyStore: Dictionary<string>): string[]
 }
 
 function getDependenciesWithVersion(dependencyStore: Dictionary<string>, dependenciesToUpdate: string[]): string[] {
-    return dependenciesToUpdate.map(packageToRemove => {
-        return `${packageToRemove}@${dependencyStore[packageToRemove]}`;
-    });
+    return dependenciesToUpdate.map(packageToRemove => `${packageToRemove}@${dependencyStore[packageToRemove]}`);
 }
 
 function updateDependencies(
@@ -108,7 +107,9 @@ function restoreLatestDependencies(dependencyType: string, latestDependencies: s
 }
 
 function run(command: string): void {
+    // eslint-disable-next-line no-console
     console.log('run command:', command);
     const stdout = exec(command, { encoding: 'utf8' });
+    // eslint-disable-next-line no-console
     console.log(stdout);
 }
