@@ -11,14 +11,14 @@
  *  @type {string}
  */
 
-import { walkThrough } from '../..';
+import { ArgsParser, walkThrough } from '../..';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as minimist from 'minimist';
 
-const argv = minimist(process.argv.slice(2));
-const searchDir = argv.searchDir;
-const pattern = argv.pattern;
+const argParser = new ArgsParser();
+const argv = argParser.get(process.argv.slice(2));
+const searchDir = argv.get('searchDir') as string | undefined;
+const pattern = argv.get('pattern') as string | undefined;
 
 if (!searchDir || !pattern) {
     throw new Error('pattern and searchDir properties is required');
