@@ -49,14 +49,12 @@
         "correct-git-branch-name": "./scripts/ci/correct-git-branch-name.js"
     },
     "dependencies": {
-        "minimist": "1.2.0",
         "npm-exists": "1.0.1"
     },
     "devDependencies": {
-        "@eigenspace/codestyle": "latest",
+        "@eigenspace/codestyle": "1.1.60",
         "@eigenspace/common-types": "0.0.5",
         "@types/jest": "22.2.2",
-        "@types/minimist": "1.2.0",
         "@types/node": "11.9.5",
         "eslint": "5.16.0",
         "husky": "1.3.1",
