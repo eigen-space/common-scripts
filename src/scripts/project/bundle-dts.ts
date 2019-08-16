@@ -1,10 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { walkThrough } from '../..';
-const argv = require('minimist')(process.argv.slice(2));
+import { ArgsParser, walkThrough } from '../..';
 
-const sourceDir = argv.src || 'dist';
-const distDir = argv.dist || sourceDir;
+const argParser = new ArgsParser();
+const argv = argParser.get(process.argv.slice(2));
+
+const sourceDirParam = argv.get('src') as string | undefined;
+const sourceDir = sourceDirParam || 'dist';
+const distDirParam = argv.get('dist') as string | undefined;
+const distDir = distDirParam || sourceDir;
 
 bundleDts(sourceDir, distDir);
 

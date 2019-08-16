@@ -18,19 +18,23 @@
 
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
-import * as minimist from 'minimist';
 import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
+import { ArgsParser } from '../..';
 
 const exists = require('npm-exists');
 
 const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
 const exec = childProcess.execSync;
-const argv = minimist(process.argv.slice(2));
+
+const argParser = new ArgsParser();
+const argv = argParser.get(process.argv.slice(2));
 
 // Get dependency suffix (branch name)
 const { name, version } = packageJson;
-const dist = argv.dist || fs.existsSync('./dist') && './dist' || currentDir;
+const distParam = argv.get('dist') as string | undefined;
+
+const dist = distParam || fs.existsSync('./dist') && './dist' || currentDir;
 
 let currentBranch = getCurrentBranchName();
 
