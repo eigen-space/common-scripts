@@ -4,19 +4,22 @@ This package contains common scripts which are very helpful in developing other 
 
 # Why do we have that dependencies?
 
-* `minimist` - argument parser.
 * `npm-exists` - to check exists npm package.
 
 # Why do we have that dev dependencies?
 
-* `@eigenspace/codestyle` - includes tslint rules, config for typescript.
+* `@eigenspace/codestyle` - includes lint rules, config for typescript.
 * `husky` - used for configure git hooks.
 * `@types/*` - contains type definitions for specific library.
 * `@eigenspace/common-types` - contains common type definitions.
 * `jest` - testing framework to write unit specs (including snapshots).
 * `ts-jest` - it lets you use Jest to test projects written in TypeScript.
-* `tslint` - it checks TypeScript code for readability, maintainability, and functionality errors.
+* `eslint` - it checks code for readability, maintainability, and functionality errors.
 * `typescript` - is a superset of JavaScript that have static type-checking and ECMAScript features.
 * `lint-staged` - used for configure linters against staged git files.
 
+# CI
 
+**Important!**
+
+Travis creates the .npmrc file during ci startup. This file contains the access token to the npm repository.

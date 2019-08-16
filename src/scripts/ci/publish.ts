@@ -4,6 +4,10 @@
  * We name dependency as `snapshot` if its version looks like: `x.x.x-<branch-name`.
  * We name dependency as `release` if its version does not have suffix: `x.x.x`.
  *
+ * Environmental requirements.
+ * It is necessary that at the time of launching the script in the root of the project there was a .npmrc file
+ * containing an access token at the time of launching the script.
+ *
  * Parameters:
  *  --dist      (optional)  You can specify destination of package you want to publish.
  *                          Default: './dist' or current directory if no ./dist is there.
@@ -14,28 +18,35 @@
 
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
-import * as minimist from 'minimist';
 import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
+import { ArgsParser } from '../..';
 
 const exists = require('npm-exists');
 
 const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
 const exec = childProcess.execSync;
-const argv = minimist(process.argv.slice(2));
+
+const argParser = new ArgsParser();
+const argv = argParser.get(process.argv.slice(2));
 
 // Get dependency suffix (branch name)
 const { name, version } = packageJson;
-const dist = argv.dist || fs.existsSync('./dist') && './dist' || currentDir;
+const distParam = argv.get('dist') as string | undefined;
+
+const dist = distParam || fs.existsSync('./dist') && './dist' || currentDir;
 
 let currentBranch = getCurrentBranchName();
 
 if (!Boolean(currentBranch)) {
+    // eslint-disable-next-line no-console
     console.log('Current branch is undefined!');
     process.exit(1);
 }
 
+// eslint-disable-next-line no-console,no-console
 console.log('branch:', currentBranch);
+// eslint-disable-next-line no-console
 console.log('package to publish:', dist);
 
 // We consider snapshot as any non-master dependency version.
@@ -46,6 +57,7 @@ const fullVersion = `${name}@${version}${suffix}`;
 
 // If branch name is not master, i.e. there is no suffix
 if (isSnapshotVersion) {
+    // eslint-disable-next-line no-console
     console.log('start publishing snapshot package...');
     // Then remove dependency from registry
     run(`npm unpublish ${fullVersion}`);
@@ -53,15 +65,17 @@ if (isSnapshotVersion) {
 
     if (dist === currentDir) {
         // Remove snapshot version from package.json
-        run(`git checkout package.json`);
+        run('git checkout package.json');
     }
 
 } else {
+    // eslint-disable-next-line no-console
     console.log('start publishing release package...');
     exists(name).then((projectExists: Boolean) => {
         // If it is production version (master), we check it exists in npm registry
         const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
         if (versionInRegistry) {
+            // eslint-disable-next-line no-console
             console.log(`package '${fullVersion}' exists in registry`);
             incrementVersionAndPush();
         }
@@ -77,8 +91,10 @@ if (isSnapshotVersion) {
 // -----------
 
 function run(command: string): string {
+    // eslint-disable-next-line no-console
     console.log('run command:', command);
     const stdout = exec(command, { encoding: 'utf8' });
+    // eslint-disable-next-line no-console
     console.log(stdout);
     return stdout;
 }
@@ -100,6 +116,7 @@ function incrementVersionAndPush(): void {
 
     const [major, minor, patch] = packageVersion.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
+    // eslint-disable-next-line no-console
     console.log('incremented version:', incrementedVersion);
 
     parsedPackageJsonFile.version = incrementedVersion;
@@ -113,6 +130,7 @@ function incrementVersionAndPush(): void {
 }
 
 function setVersionToDistPackage(packageVersion: string): void {
+    // eslint-disable-next-line no-console
     console.log('update version in dist package.json to:', packageVersion);
 
     const distPackageJsonFile = readJsonFile(`${dist}/package.json`);
@@ -122,12 +140,13 @@ function setVersionToDistPackage(packageVersion: string): void {
     const packageJsonStringified = JSON.stringify(distPackageJsonFile, undefined, indent);
     fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
+    // eslint-disable-next-line no-console
     console.log('version in dist package.json was successfully updated');
 }
 
 function checkout(branchName: string): void {
     currentBranch = branchName;
-    run(`git fetch origin --progress --prune`);
+    run('git fetch origin --progress --prune');
     run(`git checkout --track origin/${branchName}`);
 }
 
