@@ -3,7 +3,6 @@ node_js:
   - "11.10"
 git:
   depth: false
-# node_modules cache
 cache:
   directories:
     - node_modules
@@ -15,6 +14,8 @@ script:
   - if ./src/scripts/ci/detect-autocommit.sh ; then
       yarn lint && yarn test:ci && yarn build && npm run deploy:publish;
     fi
+before_install:
+  - echo "//registry.npmjs.org/:_authToken=\${NPM_ACCESS_TOKEN}" > .npmrc
 notifications:
   slack:
     rooms:

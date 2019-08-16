@@ -15,12 +15,14 @@ import * as childProcess from 'child_process';
 import { ArgsParser } from '../..';
 const exec = childProcess.execSync;
 
-const argv = ArgsParser.get(process.argv.slice(2));
-const autoCalculatedBranchName = (argv.get('branch') || [])[0];
+const argv = new ArgsParser().get(process.argv.slice(2));
+const autoCalculatedBranchName = argv.get('branch') as string | undefined;
 
 if (!Boolean(autoCalculatedBranchName)) {
     throwError('Must pass auto calculated branch name as run param with key "branch"');
 }
+
+const verifiedBranchName = autoCalculatedBranchName!;
 
 const lastCommit = run('git log -1 --oneline');
 
@@ -35,7 +37,7 @@ const intoMaster = [localBranchIntoMaster, remoteBranchIntoMaster, pullRequestIn
 const intoAnyBranch = [remoteBranchIntoAnyBranch, localBranchIntoAnyBranch];
 
 if (![...intoMaster, ...intoAnyBranch].some(regx => regx.test(lastCommit))) {
-    returnResult(autoCalculatedBranchName);
+    returnResult(verifiedBranchName);
 }
 
 if (intoMaster.some(regx => regx.test(lastCommit))) {
@@ -56,18 +58,22 @@ const branch = intoBranches[0];
 returnResult(branch.startsWith('origin/') ? branch : `origin/${branch}`);
 
 function run(command: string): string {
+    // eslint-disable-next-line no-console
     console.log('run command:', command);
     const stdout = exec(command, { encoding: 'utf8' });
+    // eslint-disable-next-line no-console
     console.log(stdout);
     return stdout;
 }
 
 function returnResult(result: string): void {
+    // eslint-disable-next-line no-console
     console.log(result);
     process.exit(0);
 }
 
 function throwError(error: string): void {
+    // eslint-disable-next-line no-console
     console.error(error);
     process.exit(1);
 }
