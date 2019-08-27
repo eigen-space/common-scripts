@@ -19,7 +19,7 @@
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
 import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
-import { ArgsParser } from '../..';
+import { ArgumentParser } from '@eigenspace/argument-parser';
 
 const exists = require('npm-exists');
 
@@ -27,7 +27,7 @@ const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
 const exec = childProcess.execSync;
 
-const argParser = new ArgsParser();
+const argParser = new ArgumentParser();
 const argv = argParser.get(process.argv.slice(2));
 
 // Get dependency suffix (branch name)
