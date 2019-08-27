@@ -11,11 +11,12 @@
  *  @type {string}
  */
 
-import { ArgsParser, walkThrough } from '../..';
+import { walkThrough } from '../..';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ArgumentParser } from '@eigenspace/argument-parser';
 
-const argParser = new ArgsParser();
+const argParser = new ArgumentParser();
 const argv = argParser.get(process.argv.slice(2));
 const searchDir = argv.get('searchDir') as string | undefined;
 const pattern = argv.get('pattern') as string | undefined;

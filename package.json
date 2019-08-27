@@ -25,7 +25,7 @@
         "lint:fix": "yarn lint:code --fix",
         "lint:markdown": "node ./node_modules/@eigenspace/codestyle/scripts/markdown-lint.js",
         "lint": "yarn lint:code . && yarn lint:markdown",
-        "test": "jest",
+        "test": "jest --passWithNoTests",
         "test:ci": "jest --ci",
         "hooks:pre-push": "yarn lint && yarn test",
         "hooks:pre-commit": "lint-staged",
@@ -49,6 +49,7 @@
         "correct-git-branch-name": "./scripts/ci/correct-git-branch-name.js"
     },
     "dependencies": {
+        "@eigenspace/argument-parser": "1.0.2",
         "npm-exists": "1.0.1"
     },
     "devDependencies": {
