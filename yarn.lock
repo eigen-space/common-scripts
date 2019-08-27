@@ -146,6 +146,11 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@eigenspace/argument-parser@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@eigenspace/argument-parser/-/argument-parser-1.0.2.tgz#dbb21937d1b88795398ff7d1d26d0f8742a0999b"
+  integrity sha512-LgHE7X/6F8zTsPNt62CvJSxBo/grXKpX6+4A9iVihkLdIvFJ8KVP6vJ1ekZS6Quov6dEBB5aKSN5Z08yTaBafg==
+
 "@eigenspace/codestyle@1.1.60":
   version "1.1.60"
   resolved "https://registry.yarnpkg.com/@eigenspace/codestyle/-/codestyle-1.1.60.tgz#2362045070a1a1eb5cfb64e08050c0ef3dd3faf7"

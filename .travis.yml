@@ -1,3 +1,4 @@
+if: branch = master
 language: node_js
 node_js:
   - "11.10"
@@ -6,7 +7,6 @@ git:
 cache:
   directories:
     - node_modules
-if: branch = master
 script:
   - git checkout $TRAVIS_BRANCH
   - git remote set-url origin https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
