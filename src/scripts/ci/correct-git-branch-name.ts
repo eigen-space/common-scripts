@@ -12,10 +12,10 @@
  */
 
 import * as childProcess from 'child_process';
-import { ArgsParser } from '../..';
+import { ArgumentParser } from '@eigenspace/argument-parser';
 const exec = childProcess.execSync;
 
-const argv = new ArgsParser().get(process.argv.slice(2));
+const argv = new ArgumentParser().get(process.argv.slice(2));
 const autoCalculatedBranchName = argv.get('branch') as string | undefined;
 
 if (!Boolean(autoCalculatedBranchName)) {

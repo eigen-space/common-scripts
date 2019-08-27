@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ArgsParser, walkThrough } from '../..';
+import { walkThrough } from '../..';
+import { ArgumentParser } from '@eigenspace/argument-parser';
 
-const argParser = new ArgsParser();
+const argParser = new ArgumentParser();
 const argv = argParser.get(process.argv.slice(2));
 
 const sourceDirParam = argv.get('src') as string | undefined;
