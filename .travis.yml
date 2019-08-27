@@ -10,7 +10,7 @@ cache:
 script:
   - git checkout $TRAVIS_BRANCH
   - git remote set-url origin https://$USER:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
-  - yarn lint && yarn test:ci && yarn build && npm run deploy:publish;
+  - yarn lint && yarn build && npm run deploy:publish;
 before_install:
   - echo "//registry.npmjs.org/:_authToken=\${NPM_ACCESS_TOKEN}" > .npmrc
 notifications:
