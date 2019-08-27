@@ -9,11 +9,8 @@ cache:
     - node_modules
 script:
   - git checkout $TRAVIS_BRANCH
-  - git remote set-url origin https://sergeevNick:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
-  - chmod +x ./src/scripts/ci/detect-autocommit.sh
-  - if ./src/scripts/ci/detect-autocommit.sh ; then
-      yarn lint && yarn test:ci && yarn build && npm run deploy:publish;
-    fi
+  - git remote set-url origin https://$USER:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
+  - yarn lint && yarn test:ci && yarn build && npm run deploy:publish;
 before_install:
   - echo "//registry.npmjs.org/:_authToken=\${NPM_ACCESS_TOKEN}" > .npmrc
 notifications:
