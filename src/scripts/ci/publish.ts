@@ -16,25 +16,19 @@
  * @see {@link https://www.notion.so/arrivalms/Versioning-5bf1876eb2f142339d719f818cc2250c}
  */
 
+import * as path from 'path';
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
 import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
 import { ArgumentParser } from '@eigenspace/argument-parser';
 
 const exists = require('npm-exists');
-
-const currentDir = process.cwd();
-const packageJson = require(`${currentDir}/package.json`);
 const exec = childProcess.execSync;
 
 const argParser = new ArgumentParser();
 const argv = argParser.get(process.argv.slice(2));
 
-// Get dependency suffix (branch name)
-const { name, version } = packageJson;
-const distParam = argv.get('dist') as string | undefined;
-
-const dist = distParam || fs.existsSync('./dist') && './dist' || currentDir;
+const projectPaths: string[] = argv.get('projectPaths') as string[] || ['/'];
 
 let currentBranch = getCurrentBranchName();
 
@@ -46,49 +40,81 @@ if (!Boolean(currentBranch)) {
 
 // eslint-disable-next-line no-console,no-console
 console.log('branch:', currentBranch);
-// eslint-disable-next-line no-console
-console.log('package to publish:', dist);
 
-// We consider snapshot as any non-master dependency version.
-// Every snapshot dependency version should be prerelease version that has suffix contains branch name
-const isSnapshotVersion = currentBranch !== 'master';
-const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
-const fullVersion = `${name}@${version}${suffix}`;
+const projectPathsThatShouldBeIncrementedInDevBranch: string[] = [];
+projectPaths.forEach(projectPath => incrementPackagesInTargetBranch(projectPath));
 
-// If branch name is not master, i.e. there is no suffix
-if (isSnapshotVersion) {
-    // eslint-disable-next-line no-console
-    console.log('start publishing snapshot package...');
-    // Then remove dependency from registry
-    run(`npm unpublish ${fullVersion}`);
-    publish(`${version}${suffix}`);
+checkout('dev');
+merge('master');
 
-    if (dist === currentDir) {
-        // Remove snapshot version from package.json
-        run('git checkout package.json');
-    }
-
-} else {
-    // eslint-disable-next-line no-console
-    console.log('start publishing release package...');
-    exists(name).then((projectExists: Boolean) => {
-        // If it is production version (master), we check it exists in npm registry
-        const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
-        if (versionInRegistry) {
-            // eslint-disable-next-line no-console
-            console.log(`package '${fullVersion}' exists in registry`);
-            incrementVersionAndPush();
-        }
-
-        publish();
-        checkout('dev');
-        merge('master');
-        incrementVersionAndPush();
-    });
-}
+projectPathsThatShouldBeIncrementedInDevBranch.forEach(projectPath => incrementPackagesInDev(projectPath));
 
 // Functions
 // -----------
+
+function incrementPackagesInTargetBranch(projectPath: string): void {
+    const currentDir = `${process.cwd()}${projectPath}`;
+
+    const packageJsonPath = path.join(currentDir, 'package.json');
+    const packageJson = require(packageJsonPath);
+    // Get dependency suffix (branch name)
+    const { name, version } = packageJson;
+
+    const distDir = path.join(currentDir, 'dist');
+    const distParam = argv.get('dist') as string | undefined;
+    const dist = distParam || fs.existsSync(distDir) && distDir || currentDir;
+
+    // eslint-disable-next-line no-console
+    console.log('package to publish:', dist);
+
+    // We consider snapshot as any non-master dependency version.
+    // Every snapshot dependency version should be prerelease version that has suffix contains branch name
+    const isSnapshotVersion = currentBranch !== 'master';
+    const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
+    const fullVersion = `${name}@${version}${suffix}`;
+
+    // If branch name is not master, i.e. there is no suffix
+    if (isSnapshotVersion) {
+        // eslint-disable-next-line no-console
+        console.log('start publishing snapshot package...');
+        // Then remove dependency from registry
+        run(`npm unpublish ${fullVersion}`);
+        publish(dist, `${version}${suffix}`);
+
+        if (dist === currentDir) {
+            // Remove snapshot version from package.json
+            run('git checkout package.json');
+        }
+
+    } else {
+        // eslint-disable-next-line no-console
+        console.log('start publishing release package...');
+        exists(name).then((projectExists: Boolean) => {
+            // If it is production version (master), we check it exists in npm registry
+            const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
+            if (versionInRegistry) {
+                // eslint-disable-next-line no-console
+                console.log(`package '${fullVersion}' exists in registry`);
+                incrementVersionAndPush(packageJsonPath, dist);
+            }
+
+            projectPathsThatShouldBeIncrementedInDevBranch.push(projectPath);
+            publish(dist);
+        });
+    }
+}
+
+function incrementPackagesInDev(projectPath: string): void {
+    const currentDir = `${process.cwd()}${projectPath}`;
+
+    const packageJsonPath = path.join(currentDir, 'package.json');
+
+    const distDir = path.join(currentDir, 'dist');
+    const distParam = argv.get('dist') as string | undefined;
+    const dist = distParam || fs.existsSync(distDir) && distDir || currentDir;
+
+    incrementVersionAndPush(packageJsonPath, dist);
+}
 
 function run(command: string): string {
     // eslint-disable-next-line no-console
@@ -99,18 +125,18 @@ function run(command: string): string {
     return stdout;
 }
 
-function publish(packageVersion?: string): void {
+function publish(dist: string, packageVersion?: string): void {
     if (packageVersion) {
-        setVersionToDistPackage(packageVersion);
+        setVersionToDistPackage(packageVersion, dist);
     }
 
     run(`npm publish ${dist}`);
 }
 
-function incrementVersionAndPush(): void {
+function incrementVersionAndPush(packageJsonPath: string, dist: string): void {
     // We getting new package.json to get always actual package.json for case when we change our branch.
     // For example, we move from master to dev. There at dev branch package.json will be different.
-    const parsedPackageJsonFile = readJsonFile('package.json');
+    const parsedPackageJsonFile = require(packageJsonPath);
     // Same with version. Always getting actual version of package.
     const { version: packageVersion } = parsedPackageJsonFile;
 
@@ -122,14 +148,14 @@ function incrementVersionAndPush(): void {
     parsedPackageJsonFile.version = incrementedVersion;
     const indent = 4;
     const packageJsonStringified = JSON.stringify(parsedPackageJsonFile, undefined, indent);
-    fs.writeFileSync('package.json', packageJsonStringified);
+    fs.writeFileSync(packageJsonPath, packageJsonStringified);
     fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
     run(`git commit --all --no-verify --message "auto/ci: set version ${incrementedVersion}"`);
     run(`git push --no-verify origin ${currentBranch}`);
 }
 
-function setVersionToDistPackage(packageVersion: string): void {
+function setVersionToDistPackage(packageVersion: string, dist: string): void {
     // eslint-disable-next-line no-console
     console.log('update version in dist package.json to:', packageVersion);
 
