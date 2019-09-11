@@ -42,7 +42,7 @@ if (!Boolean(currentBranch)) {
 console.log('branch:', currentBranch);
 
 const projectPathsThatShouldBeIncrementedInDevBranch: string[] = [];
-projectPaths.forEach(projectPath => incrementPackagesInTargetBranch(projectPath));
+projectPaths.forEach(async projectPath => await incrementPackagesInTargetBranch(projectPath));
 
 checkout('dev');
 merge('master');
@@ -52,7 +52,7 @@ projectPathsThatShouldBeIncrementedInDevBranch.forEach(projectPath => incrementP
 // Functions
 // -----------
 
-function incrementPackagesInTargetBranch(projectPath: string): void {
+async function incrementPackagesInTargetBranch(projectPath: string): Promise<void> {
     const currentDir = `${process.cwd()}${projectPath}`;
 
     const packageJsonPath = path.join(currentDir, 'package.json');
@@ -89,18 +89,18 @@ function incrementPackagesInTargetBranch(projectPath: string): void {
     } else {
         // eslint-disable-next-line no-console
         console.log('start publishing release package...');
-        exists(name).then((projectExists: Boolean) => {
-            // If it is production version (master), we check it exists in npm registry
-            const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
-            if (versionInRegistry) {
-                // eslint-disable-next-line no-console
-                console.log(`package '${fullVersion}' exists in registry`);
-                incrementVersionAndPush(packageJsonPath, dist);
-            }
 
-            projectPathsThatShouldBeIncrementedInDevBranch.push(projectPath);
-            publish(dist);
-        });
+        const projectExists: Boolean = exists(name);
+        // If it is production version (master), we check it exists in npm registry
+        const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
+        if (versionInRegistry) {
+            // eslint-disable-next-line no-console
+            console.log(`package '${fullVersion}' exists in registry`);
+            incrementVersionAndPush(packageJsonPath, dist);
+        }
+
+        projectPathsThatShouldBeIncrementedInDevBranch.push(projectPath);
+        publish(dist);
     }
 }
 
