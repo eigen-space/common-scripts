@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Script automates versioning/publishing process of packages.
  * It allows us to introduce such type of dependencies like snapshots.
@@ -33,16 +34,19 @@ const projectPaths: string[] = argv.get('projectPaths') as string[] || ['/'];
 let currentBranch = getCurrentBranchName();
 
 if (!Boolean(currentBranch)) {
-    // eslint-disable-next-line no-console
     console.log('Current branch is undefined!');
     process.exit(1);
 }
 
-// eslint-disable-next-line no-console,no-console
 console.log('branch:', currentBranch);
 
 const projectPathsThatShouldBeIncrementedInDevBranch: string[] = [];
 projectPaths.forEach(async projectPath => await incrementPackagesInTargetBranch(projectPath));
+
+const isAllProjectsHaveSnapshotBranch = !projectPathsThatShouldBeIncrementedInDevBranch.length;
+if (isAllProjectsHaveSnapshotBranch) {
+    process.exit(0);
+}
 
 push();
 checkout('dev');
@@ -66,7 +70,6 @@ async function incrementPackagesInTargetBranch(projectPath: string): Promise<voi
     const distParam = argv.get('dist') as string | undefined;
     const dist = distParam || fs.existsSync(distDir) && distDir || currentDir;
 
-    // eslint-disable-next-line no-console
     console.log('package to publish:', dist);
 
     // We consider snapshot as any non-master dependency version.
@@ -77,7 +80,6 @@ async function incrementPackagesInTargetBranch(projectPath: string): Promise<voi
 
     // If branch name is not master, i.e. there is no suffix
     if (isSnapshotVersion) {
-        // eslint-disable-next-line no-console
         console.log('start publishing snapshot package...');
         // Then remove dependency from registry
         run(`npm unpublish ${fullVersion}`);
@@ -89,16 +91,14 @@ async function incrementPackagesInTargetBranch(projectPath: string): Promise<voi
         }
 
     } else {
-        // eslint-disable-next-line no-console
         console.log('start publishing release package...');
 
         const projectExists: Boolean = exists(name);
         // If it is production version (master), we check it exists in npm registry
         const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
         if (versionInRegistry) {
-            // eslint-disable-next-line no-console
             console.log(`package '${fullVersion}' exists in registry`);
-            incrementVersionAndCommit(packageJsonPath, dist);
+            process.exit(1);
         }
 
         projectPathsThatShouldBeIncrementedInDevBranch.push(projectPath);
@@ -119,10 +119,8 @@ function incrementPackagesInDev(projectPath: string): void {
 }
 
 function run(command: string): string {
-    // eslint-disable-next-line no-console
     console.log('run command:', command);
     const stdout = exec(command, { encoding: 'utf8' });
-    // eslint-disable-next-line no-console
     console.log(stdout);
     return stdout;
 }
@@ -144,7 +142,6 @@ function incrementVersionAndCommit(packageJsonPath: string, dist: string): void 
 
     const [major, minor, patch] = packageVersion.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
-    // eslint-disable-next-line no-console
     console.log('incremented version:', incrementedVersion);
 
     parsedPackageJsonFile.version = incrementedVersion;
@@ -156,12 +153,15 @@ function incrementVersionAndCommit(packageJsonPath: string, dist: string): void 
     run(`git commit --all --no-verify --message "auto/ci: set version of ${name} to ${incrementedVersion}"`);
 }
 
+// We do not want to push from master and trigger build again.
+// In normal flow master is always in actual state and does not need to be updated.
 function push(): void {
-    run(`git push --no-verify origin ${currentBranch}`);
+    if (currentBranch !== 'master') {
+        run(`git push --no-verify origin ${currentBranch}`);
+    }
 }
 
 function setVersionToDistPackage(packageVersion: string, dist: string): void {
-    // eslint-disable-next-line no-console
     console.log('update version in dist package.json to:', packageVersion);
 
     const distPackageJsonFile = readJsonFile(`${dist}/package.json`);
@@ -171,7 +171,6 @@ function setVersionToDistPackage(packageVersion: string, dist: string): void {
     const packageJsonStringified = JSON.stringify(distPackageJsonFile, undefined, indent);
     fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
-    // eslint-disable-next-line no-console
     console.log('version in dist package.json was successfully updated');
 }
 
