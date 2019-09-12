@@ -44,10 +44,12 @@ console.log('branch:', currentBranch);
 const projectPathsThatShouldBeIncrementedInDevBranch: string[] = [];
 projectPaths.forEach(async projectPath => await incrementPackagesInTargetBranch(projectPath));
 
+push();
 checkout('dev');
 merge('master');
 
 projectPathsThatShouldBeIncrementedInDevBranch.forEach(projectPath => incrementPackagesInDev(projectPath));
+push();
 
 // Functions
 // -----------
@@ -96,7 +98,7 @@ async function incrementPackagesInTargetBranch(projectPath: string): Promise<voi
         if (versionInRegistry) {
             // eslint-disable-next-line no-console
             console.log(`package '${fullVersion}' exists in registry`);
-            incrementVersionAndPush(packageJsonPath, dist);
+            incrementVersionAndCommit(packageJsonPath, dist);
         }
 
         projectPathsThatShouldBeIncrementedInDevBranch.push(projectPath);
@@ -113,7 +115,7 @@ function incrementPackagesInDev(projectPath: string): void {
     const distParam = argv.get('dist') as string | undefined;
     const dist = distParam || fs.existsSync(distDir) && distDir || currentDir;
 
-    incrementVersionAndPush(packageJsonPath, dist);
+    incrementVersionAndCommit(packageJsonPath, dist);
 }
 
 function run(command: string): string {
@@ -133,12 +135,12 @@ function publish(dist: string, packageVersion?: string): void {
     run(`npm publish ${dist}`);
 }
 
-function incrementVersionAndPush(packageJsonPath: string, dist: string): void {
+function incrementVersionAndCommit(packageJsonPath: string, dist: string): void {
     // We getting new package.json to get always actual package.json for case when we change our branch.
     // For example, we move from master to dev. There at dev branch package.json will be different.
     const parsedPackageJsonFile = require(packageJsonPath);
     // Same with version. Always getting actual version of package.
-    const { version: packageVersion } = parsedPackageJsonFile;
+    const { name, version: packageVersion } = parsedPackageJsonFile;
 
     const [major, minor, patch] = packageVersion.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
@@ -151,7 +153,10 @@ function incrementVersionAndPush(packageJsonPath: string, dist: string): void {
     fs.writeFileSync(packageJsonPath, packageJsonStringified);
     fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
-    run(`git commit --all --no-verify --message "auto/ci: set version ${incrementedVersion}"`);
+    run(`git commit --all --no-verify --message "auto/ci: set version of ${name} to ${incrementedVersion}"`);
+}
+
+function push(): void {
     run(`git push --no-verify origin ${currentBranch}`);
 }
 
