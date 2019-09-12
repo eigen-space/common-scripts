@@ -1,6 +1,6 @@
 {
     "name": "@eigenspace/helper-scripts",
-    "version": "1.0.80",
+    "version": "1.0.81",
     "main": "index.js",
     "repository": "https://github.com/eigen-space/common-scripts.git",
     "author": "Anton Kalashnikov <tohasan@yandex.ru>",
