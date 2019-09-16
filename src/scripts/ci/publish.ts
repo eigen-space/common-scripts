@@ -30,6 +30,7 @@ const argParser = new ArgumentParser();
 const argv = argParser.get(process.argv.slice(2));
 
 const projectPaths: string[] = argv.get('projectPaths') as string[] || ['/'];
+const distParam = argv.get('dist') as string | undefined;
 
 let currentBranch = getCurrentBranchName();
 
@@ -39,26 +40,29 @@ if (!Boolean(currentBranch)) {
 }
 
 console.log('branch:', currentBranch);
+// We consider snapshot as any non-master dependency version.
+// Every snapshot dependency version should be prerelease version that has suffix contains branch name
+const isSnapshotVersion = currentBranch !== 'master';
+const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
 
-const projectPathsThatShouldBeIncrementedInDevBranch: string[] = [];
-projectPaths.forEach(async projectPath => await incrementPackagesInTargetBranch(projectPath));
+// Publish all projects
+const promises = Promise.all(projectPaths.map(projectPath => publishPackage(projectPath)));
+(async () => await promises)();
 
-const isAllProjectsHaveSnapshotBranch = !projectPathsThatShouldBeIncrementedInDevBranch.length;
-if (isAllProjectsHaveSnapshotBranch) {
+if (isSnapshotVersion) {
     process.exit(0);
 }
 
-push();
 checkout('dev');
 merge('master');
 
-projectPathsThatShouldBeIncrementedInDevBranch.forEach(projectPath => incrementPackagesInDev(projectPath));
+projectPaths.forEach(projectPath => updatePackageVersionInDev(projectPath));
 push();
 
 // Functions
 // -----------
 
-async function incrementPackagesInTargetBranch(projectPath: string): Promise<void> {
+async function publishPackage(projectPath: string): Promise<void> {
     const currentDir = `${process.cwd()}${projectPath}`;
 
     const packageJsonPath = path.join(currentDir, 'package.json');
@@ -66,16 +70,10 @@ async function incrementPackagesInTargetBranch(projectPath: string): Promise<voi
     // Get dependency suffix (branch name)
     const { name, version } = packageJson;
 
-    const distDir = path.join(currentDir, 'dist');
-    const distParam = argv.get('dist') as string | undefined;
-    const dist = distParam || fs.existsSync(distDir) && distDir || currentDir;
+    const dist = getDistDirectory(currentDir);
 
     console.log('package to publish:', dist);
 
-    // We consider snapshot as any non-master dependency version.
-    // Every snapshot dependency version should be prerelease version that has suffix contains branch name
-    const isSnapshotVersion = currentBranch !== 'master';
-    const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
     const fullVersion = `${name}@${version}${suffix}`;
 
     // If branch name is not master, i.e. there is no suffix
@@ -89,11 +87,10 @@ async function incrementPackagesInTargetBranch(projectPath: string): Promise<voi
             // Remove snapshot version from package.json
             run('git checkout package.json');
         }
-
     } else {
         console.log('start publishing release package...');
 
-        const projectExists: Boolean = exists(name);
+        const projectExists: Boolean = await exists(name);
         // If it is production version (master), we check it exists in npm registry
         const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
         if (versionInRegistry) {
@@ -101,19 +98,15 @@ async function incrementPackagesInTargetBranch(projectPath: string): Promise<voi
             process.exit(1);
         }
 
-        projectPathsThatShouldBeIncrementedInDevBranch.push(projectPath);
         publish(dist);
     }
 }
 
-function incrementPackagesInDev(projectPath: string): void {
+function updatePackageVersionInDev(projectPath: string): void {
     const currentDir = `${process.cwd()}${projectPath}`;
 
     const packageJsonPath = path.join(currentDir, 'package.json');
-
-    const distDir = path.join(currentDir, 'dist');
-    const distParam = argv.get('dist') as string | undefined;
-    const dist = distParam || fs.existsSync(distDir) && distDir || currentDir;
+    const dist = getDistDirectory(currentDir);
 
     incrementVersionAndCommit(packageJsonPath, dist);
 }
@@ -153,12 +146,8 @@ function incrementVersionAndCommit(packageJsonPath: string, dist: string): void 
     run(`git commit --all --no-verify --message "auto/ci: set version of ${name} to ${incrementedVersion}"`);
 }
 
-// We do not want to push from master and trigger build again.
-// In normal flow master is always in actual state and does not need to be updated.
 function push(): void {
-    if (currentBranch !== 'master') {
-        run(`git push --no-verify origin ${currentBranch}`);
-    }
+    run(`git push --no-verify origin ${currentBranch}`);
 }
 
 function setVersionToDistPackage(packageVersion: string, dist: string): void {
@@ -198,4 +187,9 @@ function readJsonFile(filename: string): Dictionary<string> {
 
 function prepareSuffix(rawSuffix: string): string {
     return rawSuffix.replace(/\//g, '-');
+}
+
+function getDistDirectory(currentDir: string): string {
+    const distDir = path.join(currentDir, 'dist');
+    return distParam || fs.existsSync(distDir) && distDir || currentDir;
 }
