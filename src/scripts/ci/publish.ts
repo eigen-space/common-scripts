@@ -20,7 +20,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
-import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
 import { ArgumentParser } from '@eigenspace/argument-parser';
 
 const exists = require('npm-exists');
@@ -69,9 +68,8 @@ async function publishPackage(projectPath: string): Promise<void> {
     const currentDir = `${process.cwd()}${projectPath}`;
 
     const packageJsonPath = path.join(currentDir, 'package.json');
-    const packageJson = require(packageJsonPath);
     // Get dependency suffix (branch name)
-    const { name, version } = packageJson;
+    const { name, version } = require(packageJsonPath);
 
     const dist = getDistDirectory(currentDir);
 
@@ -156,7 +154,8 @@ function push(): void {
 function setVersionToDistPackage(packageVersion: string, dist: string): void {
     console.log('update version in dist package.json to:', packageVersion);
 
-    const distPackageJsonFile = readJsonFile(`${dist}/package.json`);
+    const packageJsonPath = path.join(dist, 'package.json');
+    const distPackageJsonFile = require(packageJsonPath);
     distPackageJsonFile.version = packageVersion;
 
     const indent = 4;
@@ -182,10 +181,6 @@ function getCurrentBranchName(): string | undefined {
         .find(branchName => branchName.startsWith('*'));
 
     return (branch || '').replace('* ', '');
-}
-
-function readJsonFile(filename: string): Dictionary<string> {
-    return JSON.parse(fs.readFileSync(filename, 'utf8'));
 }
 
 function prepareSuffix(rawSuffix: string): string {
