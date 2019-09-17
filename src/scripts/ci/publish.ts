@@ -22,14 +22,12 @@ import * as fs from 'fs';
 import * as childProcess from 'child_process';
 import { ArgumentParser } from '@eigenspace/argument-parser';
 
-const exists = require('npm-exists');
 const exec = childProcess.execSync;
 
 const argParser = new ArgumentParser();
 const argv = argParser.get(process.argv.slice(2));
 
 const projectPaths: string[] = argv.get('projectPaths') as string[] || ['/'];
-const distParam = argv.get('dist') as string | undefined;
 
 let currentBranch = getCurrentBranchName();
 
@@ -44,32 +42,29 @@ console.log('branch:', currentBranch);
 const isSnapshotVersion = currentBranch !== 'master';
 const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
 
-start();
+projectPaths.forEach(projectPath => publishPackage(projectPath));
+
+if (isSnapshotVersion) {
+    process.exit(0);
+}
+
+checkout('dev');
+merge('master');
+
+projectPaths.forEach(projectPath => updatePackageVersionInDev(projectPath));
+push();
 
 // Functions
 // -----------
 
-async function start(): Promise<void> {
-    // Publish all projects
-    await Promise.all(projectPaths.map(projectPath => publishPackage(projectPath)));
-
-    if (isSnapshotVersion) {
-        process.exit(0);
-    }
-
-    checkout('dev');
-    merge('master');
-
-    projectPaths.forEach(projectPath => updatePackageVersionInDev(projectPath));
-    push();
-}
-
-async function publishPackage(projectPath: string): Promise<void> {
+function publishPackage(projectPath: string): void {
     const currentDir = `${process.cwd()}${projectPath}`;
 
     const packageJsonPath = path.join(currentDir, 'package.json');
     // Get dependency suffix (branch name)
-    const { name, version } = require(packageJsonPath);
+    const { name, version, private: isPrivate } = require(packageJsonPath);
+    // We consider project private if it has either `private: true` or do not has private field.
+    const access = isPrivate === false ? '--access public' : '';
 
     const dist = getDistDirectory(currentDir);
 
@@ -82,7 +77,7 @@ async function publishPackage(projectPath: string): Promise<void> {
         console.log('start publishing snapshot package...');
         // Then remove dependency from registry
         run(`npm unpublish ${fullVersion}`);
-        publish(dist, `${version}${suffix}`);
+        publish(dist, access, `${version}${suffix}`);
 
         if (dist === currentDir) {
             // Remove snapshot version from package.json
@@ -91,7 +86,7 @@ async function publishPackage(projectPath: string): Promise<void> {
     } else {
         console.log('start publishing release package...');
 
-        const projectExists: Boolean = await exists(name);
+        const projectExists = checkForProjectExistence(name);
         // If it is production version (master), we check it exists in npm registry
         const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
         if (versionInRegistry) {
@@ -99,7 +94,7 @@ async function publishPackage(projectPath: string): Promise<void> {
             process.exit(1);
         }
 
-        publish(dist);
+        publish(dist, access);
     }
 }
 
@@ -119,12 +114,12 @@ function run(command: string): string {
     return stdout;
 }
 
-function publish(dist: string, packageVersion?: string): void {
+function publish(dist: string, access: string, packageVersion?: string): void {
     if (packageVersion) {
         setVersionToDistPackage(packageVersion, dist);
     }
 
-    run(`npm publish ${dist}`);
+    run(`npm publish ${dist} ${access}`);
 }
 
 function incrementVersionAndCommit(packageJsonPath: string, dist: string): void {
@@ -189,5 +184,10 @@ function prepareSuffix(rawSuffix: string): string {
 
 function getDistDirectory(currentDir: string): string {
     const distDir = path.join(currentDir, 'dist');
-    return distParam || fs.existsSync(distDir) && distDir || currentDir;
+    return fs.existsSync(distDir) && distDir || currentDir;
+}
+
+function checkForProjectExistence(name: string): boolean {
+    const search = JSON.parse(run(`npm search ${name} --json`));
+    return search.some((project: { name: string }) => project.name === name);
 }

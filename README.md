@@ -5,7 +5,6 @@ This package contains common scripts which are very helpful in developing other 
 # Why do we have that dependencies?
 
 * `@eigenspace/argument-parser` - argument parser command line.
-* `npm-exists` - to check exists npm package.
 
 # Why do we have that dev dependencies?
 
