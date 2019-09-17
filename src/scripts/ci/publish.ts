@@ -45,22 +45,25 @@ console.log('branch:', currentBranch);
 const isSnapshotVersion = currentBranch !== 'master';
 const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
 
-// Publish all projects
-const promises = Promise.all(projectPaths.map(projectPath => publishPackage(projectPath)));
-(async () => await promises)();
-
-if (isSnapshotVersion) {
-    process.exit(0);
-}
-
-checkout('dev');
-merge('master');
-
-projectPaths.forEach(projectPath => updatePackageVersionInDev(projectPath));
-push();
+start();
 
 // Functions
 // -----------
+
+async function start(): Promise<void> {
+    // Publish all projects
+    await Promise.all(projectPaths.map(projectPath => publishPackage(projectPath)));
+
+    if (isSnapshotVersion) {
+        process.exit(0);
+    }
+
+    checkout('dev');
+    merge('master');
+
+    projectPaths.forEach(projectPath => updatePackageVersionInDev(projectPath));
+    push();
+}
 
 async function publishPackage(projectPath: string): Promise<void> {
     const currentDir = `${process.cwd()}${projectPath}`;
