@@ -64,7 +64,7 @@ function publishPackage(projectPath: string): void {
     // Get dependency suffix (branch name)
     const { name, version, private: isPrivate } = require(packageJsonPath);
     // We consider project private if it has either `private: true` or do not has private field.
-    const access = isPrivate === false ? '--access public' : '';
+    const access = isPrivate ? '' : '--access public';
 
     const dist = getDistDirectory(currentDir);
 
