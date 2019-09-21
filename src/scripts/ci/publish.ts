@@ -6,6 +6,8 @@
  * We name dependency as `release` if its version does not have suffix: `x.x.x`.
  *
  * Environmental requirements.
+ * If you use this script on private repository you should specify that in package.json file
+ * by adding there field `private: true`.
  * It is necessary that at the time of launching the script in the root of the project there was a .npmrc file
  * containing an access token at the time of launching the script.
  *
