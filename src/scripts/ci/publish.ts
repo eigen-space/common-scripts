@@ -6,13 +6,11 @@
  * We name dependency as `release` if its version does not have suffix: `x.x.x`.
  *
  * Environmental requirements.
- * If you use this script on private repository you should specify that in package.json file
- * by adding there field `private: true`.
  * It is necessary that at the time of launching the script in the root of the project there was a .npmrc file
  * containing an access token at the time of launching the script.
  *
  * Parameters:
- *  --dist      (optional)  You can specify destination of package you want to publish.
+ *  --projectPaths      (optional)  You can specify project dirs you want to publish as array.
  *                          Default: './dist' or current directory if no ./dist is there.
  *
  * @type {string}
@@ -64,9 +62,7 @@ function publishPackage(projectPath: string): void {
 
     const packageJsonPath = path.join(currentDir, 'package.json');
     // Get dependency suffix (branch name)
-    const { name, version, private: isPrivate } = require(packageJsonPath);
-    // We consider project private if it has either `private: true` or do not has private field.
-    const access = isPrivate ? '' : '--access public';
+    const { name, version } = require(packageJsonPath);
 
     const dist = getDistDirectory(currentDir);
 
@@ -79,7 +75,7 @@ function publishPackage(projectPath: string): void {
         console.log('start publishing snapshot package...');
         // Then remove dependency from registry
         run(`npm unpublish ${fullVersion}`);
-        publish(dist, access, `${version}${suffix}`);
+        publish(dist, `${version}${suffix}`);
 
         if (dist === currentDir) {
             // Remove snapshot version from package.json
@@ -96,7 +92,7 @@ function publishPackage(projectPath: string): void {
             process.exit(1);
         }
 
-        publish(dist, access);
+        publish(dist);
     }
 }
 
@@ -116,12 +112,14 @@ function run(command: string): string {
     return stdout;
 }
 
-function publish(dist: string, access: string, packageVersion?: string): void {
+function publish(dist: string, packageVersion?: string): void {
     if (packageVersion) {
         setVersionToDistPackage(packageVersion, dist);
     }
 
-    run(`npm publish ${dist} ${access}`);
+    // We use public access to be able publish public packages at first time to npm registry.
+    // Private packages are on private hosting so it does not affect them.
+    run(`npm publish ${dist} --access public`);
 }
 
 function incrementVersionAndCommit(packageJsonPath: string, dist: string): void {
