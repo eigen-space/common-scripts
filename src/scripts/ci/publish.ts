@@ -73,8 +73,6 @@ function publishPackage(projectPath: string): void {
     // If branch name is not master, i.e. there is no suffix
     if (isSnapshotVersion) {
         console.log('start publishing snapshot package...');
-        // Then remove dependency from registry
-        run(`npm unpublish ${fullVersion}`);
         publish(dist, `${version}${suffix}`);
 
         if (dist === currentDir) {
@@ -163,7 +161,7 @@ function setVersionToDistPackage(packageVersion: string, dist: string): void {
 function checkout(branchName: string): void {
     currentBranch = branchName;
     run('git fetch origin --progress --prune');
-    run(`git checkout --track origin/${branchName}`);
+    run(`git checkout --track -b origin/${branchName}`);
 }
 
 function merge(branchName: string): void {
