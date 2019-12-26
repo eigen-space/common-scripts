@@ -161,7 +161,7 @@ function setVersionToDistPackage(packageVersion: string, dist: string): void {
 function checkout(branchName: string): void {
     currentBranch = branchName;
     run('git fetch origin --progress --prune');
-    run(`git checkout --track -b origin/${branchName}`);
+    run(`git checkout -b ${branchName}`);
 }
 
 function merge(branchName: string): void {
