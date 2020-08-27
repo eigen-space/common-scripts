@@ -1,8 +1,8 @@
 import { WriteFileOptions } from 'fs';
-import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { AnyDictionary } from '@eigenspace/common-types';
 
 export function createDirectory(directory: string): void {
     const parentDirectory = path.dirname(directory);
@@ -33,7 +33,7 @@ export function removeDirectory(directory: string): void {
     );
 }
 
-export function writeObjectAsJson(pathToSave: string, object: Dictionary, options: WriteFileOptions = {}): void {
+export function writeObjectAsJson(pathToSave: string, object: AnyDictionary, options: WriteFileOptions = {}): void {
     const indent = 4;
     const data = JSON.stringify(object, null, indent)
         .replace(/(\r)?\n/g, os.EOL);

@@ -14,7 +14,7 @@
 
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
-import { Dictionary } from '@eigenspace/common-types/src/types/dictionary';
+import { Dictionary } from '@eigenspace/common-types';
 
 const currentDir = process.cwd();
 const packageJson = require(`${currentDir}/package.json`);
