@@ -162,10 +162,10 @@
     eslint-plugin-react "7.14.2"
     eslint-plugin-unicorn "9.1.1"
 
-"@eigenspace/common-types@0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@eigenspace/common-types/-/common-types-0.0.5.tgz#4a62c0a1528dc2843616f25f6fbe9c92a2a98ba6"
-  integrity sha512-SeGyvBLvn9OOmKFgni+AUC6Km7TKrYUBQ/2JAUms6H49nVXvmouL3Hv0w+pvlChvVgfDcp1GhQiMwfIoDqx+OQ==
+"@eigenspace/common-types@0.0.21-dev":
+  version "0.0.21-dev"
+  resolved "https://registry.yarnpkg.com/@eigenspace/common-types/-/common-types-0.0.21-dev.tgz#6620a138bf9550025b06a713f740b9cfcf5c93a1"
+  integrity sha512-h70rK9a1khUXHsORL9H30OuFE44sqJWtG9G4WFwZ7+Qz7YnJEI+6IBF6xPzV+4H3SO+1o85Ow7vzeJiBvZeolQ==
 
 "@jest/console@^24.7.1":
   version "24.7.1"

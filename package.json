@@ -54,7 +54,7 @@
     },
     "devDependencies": {
         "@eigenspace/codestyle": "1.1.60",
-        "@eigenspace/common-types": "0.0.5",
+        "@eigenspace/common-types": "0.0.21-dev",
         "@types/jest": "22.2.2",
         "@types/node": "11.9.5",
         "eslint": "5.16.0",
