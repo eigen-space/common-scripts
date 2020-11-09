@@ -10,6 +10,8 @@
  * containing an access token at the time of launching the script.
  *
  * Parameters:
+ *  --branch      (optional)  You can specify branch you are in. It is useful when you in detached mode.
+ *                          Default: gets current branch by `git branch` command.
  *  --projectPaths      (optional)  You can specify project dirs you want to publish as array.
  *                          Default: './dist' or current directory if no ./dist is there.
  *
@@ -27,31 +29,22 @@ const exec = childProcess.execSync;
 const argParser = new ArgumentParser();
 const argv = argParser.get(process.argv.slice(2));
 
-const projectPaths: string[] = argv.get('projectPaths') as string[] || ['/'];
+const projectPaths = argv.get('projectPaths') as string[] || ['/'];
+const currentBranch = argv.get('branch') || getCurrentBranchName();
 
-let currentBranch = getCurrentBranchName();
-
-if (!Boolean(currentBranch)) {
-    console.log('Current branch is undefined!');
+// We assume that we publish only packages from the master branch
+if (currentBranch !== 'master') {
+    console.error('Current branch is not master!');
     process.exit(1);
 }
 
 console.log('branch:', currentBranch);
-// We consider snapshot as any non-master dependency version.
-// Every snapshot dependency version should be prerelease version that has suffix contains branch name
-const isSnapshotVersion = currentBranch !== 'master';
-const suffix = prepareSuffix(isSnapshotVersion ? `-${currentBranch}` : '');
 
-projectPaths.forEach(projectPath => publishPackage(projectPath));
+projectPaths.forEach(projectPath => {
+    publishPackage(projectPath);
+    updatePackageVersion(projectPath);
+});
 
-if (isSnapshotVersion) {
-    process.exit(0);
-}
-
-checkout('dev');
-merge('master');
-
-projectPaths.forEach(projectPath => updatePackageVersionInDev(projectPath));
 push();
 
 // Functions
@@ -61,46 +54,31 @@ function publishPackage(projectPath: string): void {
     const currentDir = `${process.cwd()}${projectPath}`;
 
     const packageJsonPath = path.join(currentDir, 'package.json');
-    // Get dependency suffix (branch name)
     const { name, version } = require(packageJsonPath);
 
     const dist = getDistDirectory(currentDir);
 
     console.log('package to publish:', dist);
 
-    const fullVersion = `${name}@${version}${suffix}`;
+    const fullVersion = `${name}@${version}`;
 
-    // If branch name is not master, i.e. there is no suffix
-    if (isSnapshotVersion) {
-        console.log('start publishing snapshot package...');
-        publish(dist, `${version}${suffix}`);
+    console.log('start publishing release package...');
 
-        if (dist === currentDir) {
-            // Remove snapshot version from package.json
-            run('git checkout package.json');
-        }
-    } else {
-        console.log('start publishing release package...');
-
-        const projectExists = checkForProjectExistence(name);
-        // If it is production version (master), we check it exists in npm registry
-        const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
-        if (versionInRegistry) {
-            console.log(`package '${fullVersion}' exists in registry`);
-            process.exit(1);
-        }
-
-        publish(dist);
+    const projectExists = checkForProjectExistence(name);
+    // We check it exists in npm registry in case we try to push already published version
+    const versionInRegistry = projectExists && run(`npm view ${fullVersion} version`);
+    if (versionInRegistry) {
+        console.log(`package '${fullVersion}' exists in registry`);
+        process.exit(1);
     }
+
+    publish(dist);
 }
 
-function updatePackageVersionInDev(projectPath: string): void {
+function updatePackageVersion(projectPath: string): void {
     const currentDir = `${process.cwd()}${projectPath}`;
-
     const packageJsonPath = path.join(currentDir, 'package.json');
-    const dist = getDistDirectory(currentDir);
-
-    incrementVersionAndCommit(packageJsonPath, dist);
+    incrementVersionAndCommit(packageJsonPath);
 }
 
 function run(command: string): string {
@@ -110,24 +88,18 @@ function run(command: string): string {
     return stdout;
 }
 
-function publish(dist: string, packageVersion?: string): void {
-    if (packageVersion) {
-        setVersionToDistPackage(packageVersion, dist);
-    }
-
+function publish(dist: string): void {
     // We use public access to be able publish public packages at first time to npm registry.
     // Private packages are on private hosting so it does not affect them.
     run(`npm publish ${dist} --access public`);
 }
 
-function incrementVersionAndCommit(packageJsonPath: string, dist: string): void {
-    // We getting new package.json to get always actual package.json for case when we change our branch.
-    // For example, we move from master to dev. There at dev branch package.json will be different.
+function incrementVersionAndCommit(packageJsonPath: string): void {
+    // TODO: Try to remove getting package json every time because it will be the same
     const parsedPackageJsonFile = require(packageJsonPath);
-    // Same with version. Always getting actual version of package.
-    const { name, version: packageVersion } = parsedPackageJsonFile;
+    const { name, version } = parsedPackageJsonFile;
 
-    const [major, minor, patch] = packageVersion.split('.');
+    const [major, minor, patch] = version.split('.');
     const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
     console.log('incremented version:', incrementedVersion);
 
@@ -135,7 +107,6 @@ function incrementVersionAndCommit(packageJsonPath: string, dist: string): void 
     const indent = 4;
     const packageJsonStringified = JSON.stringify(parsedPackageJsonFile, undefined, indent);
     fs.writeFileSync(packageJsonPath, packageJsonStringified);
-    fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
 
     run(`git commit --all --no-verify --message "auto/ci: set version of ${name} to ${incrementedVersion}"`);
 }
@@ -144,40 +115,12 @@ function push(): void {
     run(`git push --no-verify origin ${currentBranch}`);
 }
 
-function setVersionToDistPackage(packageVersion: string, dist: string): void {
-    console.log('update version in dist package.json to:', packageVersion);
-
-    const packageJsonPath = path.join(dist, 'package.json');
-    const distPackageJsonFile = require(packageJsonPath);
-    distPackageJsonFile.version = packageVersion;
-
-    const indent = 4;
-    const packageJsonStringified = JSON.stringify(distPackageJsonFile, undefined, indent);
-    fs.writeFileSync(`${dist}/package.json`, packageJsonStringified);
-
-    console.log('version in dist package.json was successfully updated');
-}
-
-function checkout(branchName: string): void {
-    currentBranch = branchName;
-    run('git fetch origin --progress --prune');
-    run(`git checkout -b ${branchName}`);
-}
-
-function merge(branchName: string): void {
-    run(`git merge --no-ff ${branchName}`);
-}
-
-function getCurrentBranchName(): string | undefined {
+function getCurrentBranchName(): string {
     const branchList: string = run('git branch');
     const branch = branchList.split('\n')
         .find(branchName => branchName.startsWith('*'));
 
     return (branch || '').replace('* ', '');
-}
-
-function prepareSuffix(rawSuffix: string): string {
-    return rawSuffix.replace(/\//g, '-');
 }
 
 function getDistDirectory(currentDir: string): string {
