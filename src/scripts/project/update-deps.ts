@@ -96,8 +96,7 @@ function restoreLatestDependencies(dependencyType: string, latestDependencies: s
 
     const parsedPackageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
     const latestDependenciesMap = latestDependencies.reduce((acc, curr) => {
-        acc[curr] = 'latest';
-        return acc;
+        return { ...acc, [curr]: 'latest' };
     }, {} as Dictionary<string>);
     parsedPackageJson[dependencyType] = { ...parsedPackageJson[dependencyType], ...latestDependenciesMap };
 

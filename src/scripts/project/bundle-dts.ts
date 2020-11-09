@@ -26,7 +26,7 @@ function bundleDts(fromDir: string, toDir: string): void {
         }
     );
 
-    const statements  = files
+    const statements = files
         .map(file => file.replace(/\\/g, '/'))
         .map(file => new RegExp(`^${fromDir}/(.*)\.d\.ts$`).exec(file))
         .filter(match => Boolean(match))
