@@ -2,6 +2,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
+import { PublishErrorType } from './enums';
 
 interface PackageJson {
     name: string;
@@ -33,7 +34,7 @@ export class Publisher {
 
         // We assume that we publish only packages from the master branch
         if (currentBranch !== 'master') {
-            throw new Error('Current branch is not master');
+            throw new Error(PublishErrorType.BRANCH_IS_NOT_MASTER);
         }
 
         console.log('branch:', currentBranch);
@@ -64,7 +65,7 @@ export class Publisher {
         // We check it exists in npm registry in case we try to push already published version
         const versionInRegistry = projectExists && this.run(`npm view ${fullVersion} version`);
         if (versionInRegistry) {
-            throw new Error(`package '${fullVersion}' exists in registry`);
+            throw new Error(PublishErrorType.ALREADY_IN_REGISTRY);
         }
 
         this.publish(dist);

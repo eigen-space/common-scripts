@@ -1,6 +1,7 @@
 import { Publisher } from './publisher';
 import * as fs from 'fs';
 import Mock = jest.Mock;
+import { PublishErrorType } from './enums';
 
 jest.mock('child_process');
 jest.mock('fs');
@@ -54,7 +55,7 @@ describe('Publisher', () => {
             try {
                 publisher.start('dev');
             } catch (e) {
-                expect(e.message).toEqual('Current branch is not master');
+                expect(e.message).toEqual(PublishErrorType.BRANCH_IS_NOT_MASTER);
             }
         });
 
@@ -72,11 +73,11 @@ describe('Publisher', () => {
             try {
                 publisher.start('master');
             } catch (e) {
-                expect(e.message).toEqual(`package '${PACKAGE_JSON.name}@${PACKAGE_JSON.version}' exists in registry`);
+                expect(e.message).toEqual(PublishErrorType.ALREADY_IN_REGISTRY);
             }
         });
 
-        it('should publish package and update version in package json', () => {
+        it('should publish package and update version in package json and push with auto ci commit', () => {
             executor.mockImplementation(command => {
                 if (command.startsWith('npm search')) {
                     return JSON.stringify([{ name: PACKAGE_JSON.name }]);
@@ -86,9 +87,11 @@ describe('Publisher', () => {
             publisher.start('master');
 
             expect(executor).toHaveBeenCalledWith(expect.stringMatching(/npm publish .*/), expect.anything());
+
             const incrementedPackageJson = JSON.stringify({ ...PACKAGE_JSON, version: '2.0.11' }, null, 4);
             expect(fs.writeFileSync).toBeCalledWith(expect.anything(), incrementedPackageJson);
-            const commitPattern = /git commit --all.*auto\/ci:.*2\.0\.11.*/;
+
+            const commitPattern = /git commit .*auto\/ci:.*/;
             expect(executor).toHaveBeenCalledWith(expect.stringMatching(commitPattern), expect.anything());
             expect(executor).toHaveBeenCalledWith(expect.stringMatching(/git push.*master/), expect.anything());
         });
