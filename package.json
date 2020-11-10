@@ -1,6 +1,6 @@
 {
     "name": "@eigenspace/helper-scripts",
-    "version": "2.0.8",
+    "version": "3.0.1",
     "private": false,
     "main": "index.js",
     "repository": "https://github.com/eigen-space/common-scripts.git",
@@ -30,7 +30,7 @@
         "test:ci": "jest --ci",
         "hooks:pre-push": "yarn lint && yarn test",
         "hooks:pre-commit": "lint-staged",
-        "deploy:publish": "node ./dist/scripts/ci/publish.js",
+        "deploy:publish": "node ./dist/scripts/ci/publish",
         "script:update-deps-remote": "npx -p @eigenspace/helper-scripts update-deps"
     },
     "husky": {
@@ -46,22 +46,23 @@
         ]
     },
     "bin": {
-        "update-deps": "./scripts/project/update-deps.js",
-        "correct-git-branch-name": "./scripts/ci/correct-git-branch-name.js"
+        "update-deps": "./scripts/project/update-deps/index.js"
     },
     "dependencies": {
         "@eigenspace/argument-parser": "1.0.2"
     },
     "devDependencies": {
-        "@eigenspace/codestyle": "1.1.60",
-        "@eigenspace/common-types": "0.0.21-dev",
+        "@eigenspace/codestyle": "3.0.3",
+        "@eigenspace/commit-linter": "0.0.21",
+        "@eigenspace/common-types": "0.0.20",
         "@types/jest": "22.2.2",
         "@types/node": "11.9.5",
-        "eslint": "5.16.0",
+        "eslint": "7.13.0",
+        "eslint-plugin-eigenspace-script": "0.1.3",
         "husky": "1.3.1",
         "jest": "24.7.1",
         "lint-staged": "8.1.5",
         "ts-jest": "24.0.2",
-        "typescript": "3.4.5"
+        "typescript": "3.8.2"
     }
 }
