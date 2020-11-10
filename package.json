@@ -46,8 +46,7 @@
         ]
     },
     "bin": {
-        "update-deps": "./scripts/project/update-deps.js",
-        "correct-git-branch-name": "./scripts/ci/correct-git-branch-name.js"
+        "update-deps": "./scripts/project/update-deps/index.js"
     },
     "dependencies": {
         "@eigenspace/argument-parser": "1.0.2"
