@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Script checks whether commit is created automatically.
-# Exit with error code if it is jenkins's commit, otherwise with success code.
+# Exit with error code if it is auto commit made by CI, otherwise with success code.
 
-isJenkinsCommitExpression=`git log -1 --oneline | grep auto/ci:`
-if [ -z "$isJenkinsCommitExpression" ]; then
+isAutoCommitExpression=`git log -1 --oneline | grep auto/ci:`
+if [ -z "$isAutoCommitExpression" ]; then
     echo 'it is user commit'
     exit 0
 else
