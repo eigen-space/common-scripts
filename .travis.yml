@@ -1,4 +1,4 @@
-if: branch =~ ^(master|dev|#.*)$ AND commit_message !~ /auto\/ci:\sset\sversion/
+if: commit_message !~ /auto\/ci:\sset\sversion/
 language: node_js
 node_js:
   - "12.16.3"

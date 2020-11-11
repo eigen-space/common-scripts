@@ -26,14 +26,16 @@ export class Publisher {
      * @param {string} [branch=(git branch)] Closest activity that called the logger.
      * @param {string[]} [projectPaths=['/']] projectPaths Project dirs you want to publish.
      *      If there is no ./dist directory the whole directory will be published.
-     * @throws Throws error in case branch is not the master or package already in repository
+     * @throws Throws error if the package is already in repository.
      */
     start(branch?: string, projectPaths = ['/']): void {
         const currentBranch = branch || this.getCurrentBranchName();
 
         // We assume that we publish only packages from the master branch
         if (currentBranch !== 'master') {
-            throw new Error(PublishErrorType.BRANCH_IS_NOT_MASTER);
+            console.log('Current branch is not master');
+            console.log('Skipping package publishing');
+            return;
         }
 
         console.log('branch:', currentBranch);

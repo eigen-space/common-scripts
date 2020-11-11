@@ -51,12 +51,9 @@ describe('Publisher', () => {
             expect(executor).toHaveBeenCalledWith(expect.stringMatching(/git push.*master/), expect.anything());
         });
 
-        it('should throw exception if branch is not master', () => {
-            try {
-                publisher.start('dev');
-            } catch (e) {
-                expect(e.message).toEqual(PublishErrorType.BRANCH_IS_NOT_MASTER);
-            }
+        it('should not publish not master packages', () => {
+            publisher.start('dev');
+            expect(executor).not.toHaveBeenCalledWith(expect.stringMatching(/npm publish.*/), expect.anything());
         });
 
         it('should throw exception if package is already in npm repository', () => {

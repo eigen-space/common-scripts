@@ -21,11 +21,14 @@ module.exports = {
         '<rootDir>/dist/'
     ],
     setupFiles: [
-        '<rootDir>/config/jest/setup/console.setup.js'
+        '<rootDir>/config/jest/setup/console.setup.ts'
+    ],
+    setupFilesAfterEnv: [
+        '<rootDir>/config/jest/env-setup/check-assertions-number.ts'
     ],
     testURL: 'http://localhost',
     transform: {
-        '^(?!.*\\.(js|ts|tsx|css|json)$)': '<rootDir>/config/jest/transform/file.transform.js',
+        '^(?!.*\\.(js|ts|tsx|css|json)$)': '<rootDir>/config/jest/transform/file.transform.ts',
         '^.+\\.tsx?$': 'ts-jest'
     },
     moduleFileExtensions: [
