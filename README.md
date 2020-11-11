@@ -2,6 +2,8 @@
 
 This package contains common scripts which are very helpful in developing other script utils for projects.
 
+[Versionong](src/scripts/ci/publish/README.md)
+
 # Why do we have that dependencies?
 
 * `@eigenspace/argument-parser` - argument parser command line.

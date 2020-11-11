@@ -22,7 +22,6 @@ export class Publisher {
      * It is necessary that at the time of launching the script in the root of the project there was a .npmrc file
      * containing an access token at the time of launching the script.
      * Also be sure you set an auto-commit check on CI to prevent an endless loop of commits and CI.
-     * @see {@link https://www.notion.so/arrivalms/Versioning-5bf1876eb2f142339d719f818cc2250c}
      *
      * @param {string} [branch=(git branch)] Closest activity that called the logger.
      * @param {string[]} [projectPaths=['/']] projectPaths Project dirs you want to publish.
