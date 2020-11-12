@@ -161,7 +161,7 @@
   resolved "https://registry.yarnpkg.com/@eigenspace/codestyle/-/codestyle-3.0.3.tgz#4252c639deae075b59d03d79604a7d77a585669b"
   integrity sha512-7p6YktUiHgCi/918qrFxGfYQVxnxZQMGhKODOUBemENXhHguoYEchc2Kw2qHisLuiUv45vppxWW96key8PRwYQ==
 
-"@eigenspace/commit-linter@0.0.21":
+"@eigenspace/commit-linter@0.0.22":
   version "0.0.21"
   resolved "https://registry.yarnpkg.com/@eigenspace/commit-linter/-/commit-linter-0.0.21.tgz#4613e57d37021cc86ba4c1029662b35d943902d1"
   integrity sha512-QhGDXqnyxAiljqFU3Xhwix63jXySVgis8D7YRHn7zi/tErPD1NPZwHqpVHs2J6fS9CFAJHAVcM9yqk3CN3/GxQ==
