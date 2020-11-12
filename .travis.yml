@@ -9,6 +9,8 @@ cache:
     - node_modules
 script:
   - git remote set-url origin https://$USER:$GITHUB_API_KEY@github.com/eigen-space/helper-scripts.git
+  # We use additional dashes here `--` because
+  # It is needed to separate the params passed to npm command itself and params passed to your script
   - yarn lint && yarn build && npm run deploy:publish -- --branch=$TRAVIS_BRANCH;
 before_install:
   - echo "registry=https://$REGISTRY/" >> .npmrc
