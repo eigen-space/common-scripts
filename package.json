@@ -30,7 +30,7 @@
         "test:ci": "jest --ci",
         "hooks:pre-push": "yarn lint && yarn test",
         "hooks:pre-commit": "lint-staged",
-        "deploy:publish": "node ./dist/scripts/ci/publish",
+        "deploy:publish": "node ./dist/scripts/ci/publish/index.js",
         "script:update-deps-remote": "npx -p @eigenspace/helper-scripts update-deps"
     },
     "husky": {
