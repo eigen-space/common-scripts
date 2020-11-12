@@ -9,25 +9,25 @@ jest.mock('child_process');
 jest.mock('fs');
 
 describe('Publisher', () => {
-    const PACKAGE_JSON = { name: '@eigenspace/helper-scripts', version: '2.0.10' };
-    (fs.readFileSync as Mock).mockReturnValue(Buffer.from(JSON.stringify(PACKAGE_JSON)));
-
-    const MockGitExecutor = jest.fn<GitExecutor>(() => ({
-        branch: jest.fn(),
-        checkout: jest.fn(),
-        commit: jest.fn(),
-        push: jest.fn()
-    }));
-    const MockNpmExecutor = jest.fn<NpmExecutor>(() => ({
-        publish: jest.fn(),
-        view: jest.fn(),
-        search: jest.fn().mockReturnValue(JSON.stringify([{ name: PACKAGE_JSON.name }]))
-    }));
-    const gitExec = new MockGitExecutor();
-    const npmExec = new MockNpmExecutor();
-    const publisher = new Publisher(gitExec, npmExec);
 
     describe('#start', () => {
+        const PACKAGE_JSON = { name: '@eigenspace/helper-scripts', version: '2.0.10' };
+        (fs.readFileSync as Mock).mockReturnValue(Buffer.from(JSON.stringify(PACKAGE_JSON)));
+
+        const MockGitExecutor = jest.fn<GitExecutor>(() => ({
+            branch: jest.fn(),
+            checkout: jest.fn(),
+            commit: jest.fn(),
+            push: jest.fn()
+        }));
+        const MockNpmExecutor = jest.fn<NpmExecutor>(() => ({
+            publish: jest.fn(),
+            view: jest.fn(),
+            search: jest.fn().mockReturnValue(JSON.stringify([{ name: PACKAGE_JSON.name }]))
+        }));
+        const gitExec = new MockGitExecutor();
+        const npmExec = new MockNpmExecutor();
+        const publisher = new Publisher(gitExec, npmExec);
 
         it('should set default branch if no specified', () => {
             (gitExec.branch as Mock).mockReturnValueOnce('* master');
