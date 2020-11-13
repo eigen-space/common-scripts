@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
 import * as path from 'path';
 import * as fs from 'fs';
-import * as childProcess from 'child_process';
 import { PublishErrorType } from './enums';
+import { GitExecutor } from '../../../common/executors/git.executor';
+import { NpmExecutor } from '../../../common/executors/npm.executor';
 
 interface PackageJson {
     name: string;
@@ -11,7 +11,7 @@ interface PackageJson {
 
 export class Publisher {
 
-    constructor(private readonly exec = childProcess.execSync) {
+    constructor(private readonly gitExec = new GitExecutor(), private readonly npmExec = new NpmExecutor()) {
     }
 
     /**
@@ -22,19 +22,24 @@ export class Publisher {
      * It is necessary that at the time of launching the script in the root of the project there was a .npmrc file
      * containing an access token at the time of launching the script.
      * Also be sure you set an auto-commit check on CI to prevent an endless loop of commits and CI.
-     * @see {@link https://www.notion.so/arrivalms/Versioning-5bf1876eb2f142339d719f818cc2250c}
      *
-     * @param {string} [branch=(git branch)] Closest activity that called the logger.
+     * @param {string} [branch=(git branch)] Branch we should work with.
      * @param {string[]} [projectPaths=['/']] projectPaths Project dirs you want to publish.
      *      If there is no ./dist directory the whole directory will be published.
-     * @throws Throws error in case branch is not the master or package already in repository
+     * @throws Throws error if the package is already in repository.
      */
     start(branch?: string, projectPaths = ['/']): void {
+        if (branch) {
+            this.gitExec.checkout(branch);
+        }
+
         const currentBranch = branch || this.getCurrentBranchName();
 
         // We assume that we publish only packages from the master branch
         if (currentBranch !== 'master') {
-            throw new Error(PublishErrorType.BRANCH_IS_NOT_MASTER);
+            console.log('Current branch is not master');
+            console.log('Skipping package publishing');
+            return;
         }
 
         console.log('branch:', currentBranch);
@@ -48,7 +53,7 @@ export class Publisher {
             this.incrementVersionAndCommit(packageJsonPath, packageJson);
         });
 
-        this.push(currentBranch);
+        this.gitExec.push(currentBranch);
     }
 
     private publishPackage(currentDir: string, packageJson: PackageJson): void {
@@ -63,25 +68,12 @@ export class Publisher {
 
         const projectExists = this.checkForProjectExistence(name);
         // We check it exists in npm registry in case we try to push already published version
-        const versionInRegistry = projectExists && this.run(`npm view ${fullVersion} version`);
+        const versionInRegistry = projectExists && this.npmExec.view(fullVersion);
         if (versionInRegistry) {
             throw new Error(PublishErrorType.ALREADY_IN_REGISTRY);
         }
 
-        this.publish(dist);
-    }
-
-    private run(command: string): string {
-        console.log('run command:', command);
-        const stdout = this.exec(command, { encoding: 'utf8' });
-        console.log(stdout);
-        return stdout;
-    }
-
-    private publish(dist: string): void {
-        // We use public access to be able publish public packages at first time to npm registry.
-        // Private packages are on private hosting so it does not affect them.
-        this.run(`npm publish ${dist} --access public`);
+        this.npmExec.publish(dist);
     }
 
     private incrementVersionAndCommit(packageJsonPath: string, packageJson: PackageJson): void {
@@ -96,15 +88,11 @@ export class Publisher {
         const packageJsonStringified = JSON.stringify(incrementedPackageJson, null, indent);
         fs.writeFileSync(packageJsonPath, packageJsonStringified);
 
-        this.run(`git commit --all --no-verify --message "auto/ci: set version of ${name} to ${incrementedVersion}"`);
-    }
-
-    private push(branch: string): void {
-        this.run(`git push --no-verify origin ${branch}`);
+        this.gitExec.commit(`auto/ci: set version of ${name} to ${incrementedVersion}`);
     }
 
     private getCurrentBranchName(): string {
-        const branchList: string = this.run('git branch');
+        const branchList: string = this.gitExec.branch();
         const branch = branchList.split('\n')
             .find(branchName => branchName.startsWith('*'));
 
@@ -123,8 +111,8 @@ export class Publisher {
         return fs.existsSync(distDir) && distDir || currentDir;
     }
 
-    private checkForProjectExistence(name: string): boolean {
-        const search = JSON.parse(this.run(`npm search ${name} --json`));
-        return search.some((project: { name: string }) => project.name === name);
+    private checkForProjectExistence(packageName: string): boolean {
+        const result = JSON.parse(this.npmExec.search(packageName));
+        return result.some((project: { name: string }) => project.name === packageName);
     }
 }

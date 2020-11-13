@@ -3,6 +3,7 @@ import { Dictionary } from '@eigenspace/common-types';
 import * as childProcess from 'child_process';
 
 export class DependencyWorker {
+    private static LATEST_DEPENDENCY = 'latest';
     private static DEPENDENCY_FLAGS = new Map([
         ['dependencies', ''],
         ['devDependencies', '-D'],
@@ -50,7 +51,6 @@ export class DependencyWorker {
 
             const latestDependencies = this.findLatestDependencies(dependenciesMap);
 
-            // eslint-disable-next-line no-console
             console.log('dependencies to update', dependenciesToUpdate);
 
             const dependenciesWithVersion = this.getDependenciesWithVersion(dependenciesMap, dependenciesToUpdate);
@@ -61,7 +61,7 @@ export class DependencyWorker {
 
     private findLatestDependencies(dependencyStore: Dictionary<string>): string[] {
         return Object.keys(dependencyStore)
-            .filter(key => dependencyStore[key] === 'latest');
+            .filter(this.isLatestDependency);
     }
 
     private findDependenciesToUpdate(
@@ -78,7 +78,7 @@ export class DependencyWorker {
             .filter(key => {
                 const isSnapshot = snapshotPattern.test(dependencyStore[key]);
                 const isUrl = dependencyStore[key].startsWith('http');
-                const isLatest = dependencyStore[key] === 'latest';
+                const isLatest = this.isLatestDependency(dependencyStore[key]);
                 return isSnapshot || isUrl || isLatest;
             });
     }
@@ -104,9 +104,10 @@ export class DependencyWorker {
         }
 
         const parsedPackageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-        const latestDependenciesMap = latestDependencies.reduce((acc, curr) => {
-            return { ...acc, [curr]: 'latest' };
-        }, {} as Dictionary<string>);
+        const latestDependenciesMap: Dictionary<string> = {};
+        latestDependencies.forEach(dependency => {
+            latestDependenciesMap[dependency] = DependencyWorker.LATEST_DEPENDENCY;
+        });
         parsedPackageJson[dependencyType] = { ...parsedPackageJson[dependencyType], ...latestDependenciesMap };
 
         const indent = 4;
@@ -114,11 +115,14 @@ export class DependencyWorker {
         fs.writeFileSync('package.json', packageJsonStringified);
     }
 
+    // noinspection JSMethodCanBeStatic
+    private isLatestDependency(version: string): boolean {
+        return version === DependencyWorker.LATEST_DEPENDENCY;
+    }
+
     private run(command: string): void {
-        // eslint-disable-next-line no-console
         console.log('run command:', command);
         const stdout = this.exec(command, { encoding: 'utf8' });
-        // eslint-disable-next-line no-console
         console.log(stdout);
     }
 }

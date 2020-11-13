@@ -2,6 +2,8 @@
 
 This package contains common scripts which are very helpful in developing other script utils for projects.
 
+[Versioning](src/scripts/ci/publish/README.md)
+
 # Why do we have that dependencies?
 
 * `@eigenspace/argument-parser` - argument parser command line.
@@ -25,14 +27,3 @@ This package contains common scripts which are very helpful in developing other 
 **Important!**
 
 Travis creates the .npmrc file during ci startup. This file contains the access token to the npm repository.
-
-**Important!**
-
-Snapshot versions of packages are stored at https://artifacts.arrival.services/
- Therefore, in order to use them, you need to add registry information to .yarnrc:
- 
- ```markdown
-    registry "https://artifacts.arrival.services/"
- ```
- 
-Master versions of the packages are stored in the npm registry
