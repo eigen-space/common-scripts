@@ -3,29 +3,32 @@ import * as path from 'path';
 import { walkThrough } from '../../..';
 
 export class Bundler {
+    private files: string[];
+
+    constructor() {
+        this.findDeclarationFile = this.findDeclarationFile.bind(this);
+    }
 
     bundle(fromDir: string, toDir: string): void {
-        const files: string[] = [];
+        this.files = [];
 
-        walkThrough(
-            fromDir,
-            (dir: string, file: string) => {
-                const fillPath = path.join(dir, file);
-                if (fs.statSync(fillPath).isFile() && /\.d\.ts$/.test(fillPath)) {
-                    files.push(fillPath);
-                }
-            }
-        );
+        walkThrough(fromDir, this.findDeclarationFile);
 
-        const statements = files
+        const statements = this.files
             .map(file => file.replace(/\\/g, '/'))
             .map(file => new RegExp(`^${fromDir}/(.*)\.d\.ts$`).exec(file))
             .filter(match => Boolean(match))
-            // @ts-ignore: Object is possibly 'null'
-            .map(match => match[1])
+            .map(match => match![1])
             .map(file => `export * from './${file}';`)
             .join('\n');
 
         fs.writeFileSync(`${toDir}/index.d.ts`, statements);
+    }
+
+    private findDeclarationFile(dir: string, file: string): void {
+        const fillPath = path.join(dir, file);
+        if (fs.statSync(fillPath).isFile() && /\.d\.ts$/.test(fillPath)) {
+            this.files.push(fillPath);
+        }
     }
 }

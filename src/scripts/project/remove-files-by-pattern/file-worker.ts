@@ -3,6 +3,11 @@ import * as path from 'path';
 import { walkThrough } from '../../..';
 
 export class FileWorker {
+    private filenameRegex: RegExp;
+
+    constructor() {
+        this.removeFileByRegExp = this.removeFileByRegExp.bind(this);
+    }
 
     /**
      * Removes all files that matches specified pattern in folder you also provide.
@@ -15,18 +20,16 @@ export class FileWorker {
             throw new Error('pattern and searchDir properties is required');
         }
 
-        const regExp = new RegExp(pattern);
+        this.filenameRegex = new RegExp(pattern);
+        walkThrough(searchDir, this.removeFileByRegExp);
+    }
 
-        walkThrough(
-            searchDir,
-            (dir: string, file: string) => {
-                const concatenatedPath = path.join(dir, file);
-                if (fs.statSync(concatenatedPath).isFile() && regExp.test(file.toString())) {
-                    fs.unlinkSync(concatenatedPath);
-                    // eslint-disable-next-line no-console
-                    console.log('removed file:', file);
-                }
-            }
-        );
+    // noinspection JSMethodCanBeStatic
+    private removeFileByRegExp(dir: string, file: string): void {
+        const concatenatedPath = path.join(dir, file);
+        if (fs.statSync(concatenatedPath).isFile() && this.filenameRegex.test(file.toString())) {
+            fs.unlinkSync(concatenatedPath);
+            console.log('removed file:', file);
+        }
     }
 }
