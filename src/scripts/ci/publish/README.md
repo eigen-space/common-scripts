@@ -32,7 +32,7 @@ If you want, you can set any different version number in `feature` branch before
 
 ## Continuous integration
 
-Link: [Diagram. Publish script](https://app.diagrams.net/#G1tMea7PiWRWfQW587hHsOB10qE2KlEyMY)
+Link: [Diagram. Publish script](https://app.diagrams.net/?#G1vAuRixKK4VOVRYpTGHgzgLxB2b5SdAfU)
 
 Publishing algorithm looks like:
 
