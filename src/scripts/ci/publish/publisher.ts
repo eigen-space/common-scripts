@@ -55,7 +55,8 @@ export class Publisher {
 
     private incrementPackageVersionAndPublish(currentDir: string): void {
         const dist = this.getDistDirectory(currentDir);
-        const packageJson = this.readPackageJson(dist);
+        const packageJsonPath = this.getPackageJsonPath(currentDir);
+        const packageJson = this.readPackageJson(packageJsonPath);
         const incrementedPackageJson = this.incrementVersion(dist, packageJson);
 
         console.log('package to publish:', dist);
@@ -63,7 +64,7 @@ export class Publisher {
     }
 
     private incrementProjectVersionAndCommit(currentDir: string): void {
-        const packageJsonPath = path.join(currentDir, 'package.json');
+        const packageJsonPath = this.getPackageJsonPath(currentDir);
         const packageJson = this.readPackageJson(packageJsonPath);
         const incrementedPackageJson = this.incrementVersion(packageJsonPath, packageJson);
         this.commit(incrementedPackageJson);
@@ -112,6 +113,10 @@ export class Publisher {
             .find(branchName => branchName.startsWith('*'));
 
         return (branch || '').replace('* ', '');
+    }
+
+    private getPackageJsonPath(packageJsonDir: string): string {
+        return path.join(packageJsonDir, 'package.json');
     }
 
     // noinspection JSMethodCanBeStatic
