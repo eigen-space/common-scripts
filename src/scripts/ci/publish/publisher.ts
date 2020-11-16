@@ -55,18 +55,14 @@ export class Publisher {
 
     private incrementPackageVersionAndPublish(currentDir: string): void {
         const dist = this.getDistDirectory(currentDir);
-        const packageJsonPath = this.getPackageJsonPath(dist);
-        const packageJson = this.readPackageJson(packageJsonPath);
-        const incrementedPackageJson = this.incrementVersion(packageJsonPath, packageJson);
+        const incrementedPackageJson = this.incrementVersion(dist);
 
         console.log('package to publish:', dist);
         this.publishPackage(dist, incrementedPackageJson);
     }
 
     private incrementProjectVersionAndCommit(currentDir: string): void {
-        const packageJsonPath = this.getPackageJsonPath(currentDir);
-        const packageJson = this.readPackageJson(packageJsonPath);
-        const incrementedPackageJson = this.incrementVersion(packageJsonPath, packageJson);
+        const incrementedPackageJson = this.incrementVersion(currentDir);
         this.commit(incrementedPackageJson);
     }
 
@@ -87,7 +83,9 @@ export class Publisher {
         this.npmExec.publish(dist);
     }
 
-    private incrementVersion(packageJsonPath: string, packageJson: PackageJson): PackageJson {
+    private incrementVersion(directory: string): PackageJson {
+        const packageJsonPath = this.getPackageJsonPath(directory);
+        const packageJson = this.readPackageJson(packageJsonPath);
         const { version } = packageJson;
 
         const [major, minor, patch] = version.split('.');
