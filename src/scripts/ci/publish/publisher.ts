@@ -46,21 +46,31 @@ export class Publisher {
 
         projectPaths.forEach(projectPath => {
             const currentDir = `${process.cwd()}${projectPath}`;
-            const packageJsonPath = path.join(currentDir, 'package.json');
-            const packageJson = this.readPackageJson(packageJsonPath);
-
-            this.publishPackage(currentDir, packageJson);
-            this.incrementVersionAndCommit(packageJsonPath, packageJson);
+            this.incrementPackageVersionAndPublish(currentDir);
+            this.incrementProjectVersionAndCommit(currentDir);
         });
 
         this.gitExec.push(currentBranch);
     }
 
-    private publishPackage(currentDir: string, packageJson: PackageJson): void {
-        const { name, version } = packageJson;
-
+    private incrementPackageVersionAndPublish(currentDir: string): void {
         const dist = this.getDistDirectory(currentDir);
+        const packageJson = this.readPackageJson(dist);
+        const incrementedPackageJson = this.incrementVersion(dist, packageJson);
+
         console.log('package to publish:', dist);
+        this.publishPackage(dist, incrementedPackageJson);
+    }
+
+    private incrementProjectVersionAndCommit(currentDir: string): void {
+        const packageJsonPath = path.join(currentDir, 'package.json');
+        const packageJson = this.readPackageJson(packageJsonPath);
+        const incrementedPackageJson = this.incrementVersion(packageJsonPath, packageJson);
+        this.commit(incrementedPackageJson);
+    }
+
+    private publishPackage(dist: string, packageJson: PackageJson): void {
+        const { name, version } = packageJson;
 
         const fullVersion = `${name}@${version}`;
 
@@ -76,8 +86,8 @@ export class Publisher {
         this.npmExec.publish(dist);
     }
 
-    private incrementVersionAndCommit(packageJsonPath: string, packageJson: PackageJson): void {
-        const { name, version } = packageJson;
+    private incrementVersion(packageJsonPath: string, packageJson: PackageJson): PackageJson {
+        const { version } = packageJson;
 
         const [major, minor, patch] = version.split('.');
         const incrementedVersion = `${major}.${minor}.${Number(patch) + 1}`;
@@ -88,7 +98,12 @@ export class Publisher {
         const packageJsonStringified = JSON.stringify(incrementedPackageJson, null, indent);
         fs.writeFileSync(packageJsonPath, packageJsonStringified);
 
-        this.gitExec.commit(`auto/ci: set version of ${name} to ${incrementedVersion}`);
+        return incrementedPackageJson;
+    }
+
+    private commit(packageJson: PackageJson): void {
+        const { name, version } = packageJson;
+        this.gitExec.commit(`auto/ci: set version of ${name} to ${version}`);
     }
 
     private getCurrentBranchName(): string {
