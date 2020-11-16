@@ -67,13 +67,15 @@ describe('Publisher', () => {
 
         it(`should increment version in package then publish it 
         after that increment version in project and push it with auto ci commit`, () => {
-            publisher.start('master');
+            publisher.start('master', ['/dir']);
 
             const incrementedPackageJson = JSON.stringify({ ...PACKAGE_JSON, version: '2.0.11' }, null, 4);
-            expect(fs.writeFileSync).toHaveBeenNthCalledWith(1, expect.anything(), incrementedPackageJson);
+            const packageFileMatcher = expect.stringMatching(/.*dir.*package.json/);
+            expect(fs.writeFileSync).toHaveBeenNthCalledWith(1, packageFileMatcher, incrementedPackageJson);
             expect(npmExec.publish).toHaveBeenCalled();
 
-            expect(fs.writeFileSync).toHaveBeenNthCalledWith(2, expect.anything(), incrementedPackageJson);
+            const repositoryFileMatcher = expect.stringMatching(/.*package.json/);
+            expect(fs.writeFileSync).toHaveBeenNthCalledWith(2, repositoryFileMatcher, incrementedPackageJson);
             const commitPattern = /auto\/ci:.*/;
             expect(gitExec.commit).toHaveBeenCalledWith(expect.stringMatching(commitPattern));
             expect(gitExec.push).toHaveBeenCalledWith('master');
