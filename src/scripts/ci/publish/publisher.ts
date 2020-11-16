@@ -55,9 +55,9 @@ export class Publisher {
 
     private incrementPackageVersionAndPublish(currentDir: string): void {
         const dist = this.getDistDirectory(currentDir);
-        const packageJsonPath = this.getPackageJsonPath(currentDir);
+        const packageJsonPath = this.getPackageJsonPath(dist);
         const packageJson = this.readPackageJson(packageJsonPath);
-        const incrementedPackageJson = this.incrementVersion(dist, packageJson);
+        const incrementedPackageJson = this.incrementVersion(packageJsonPath, packageJson);
 
         console.log('package to publish:', dist);
         this.publishPackage(dist, incrementedPackageJson);
