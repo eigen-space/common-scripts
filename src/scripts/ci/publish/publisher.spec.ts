@@ -12,6 +12,10 @@ describe('Publisher', () => {
         const PACKAGE_JSON = { name: '@eigenspace/helper-scripts', version: '2.0.10' };
         (fs.readFileSync as Mock).mockReturnValue(Buffer.from(JSON.stringify(PACKAGE_JSON)));
 
+        // After jest 24 they stricter returned type from Mock function.
+        // So typescript asks for full type matching includes private fields.
+        // Mock interface: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/a4a35ecdf937493d4ffed43c956c65fd7ad5ec73/types/jest/index.d.ts#L1088
+        // StackOverflow same situation: https://stackoverflow.com/questions/54680300/why-is-jest-v24-mocking-class-requiring-private-methods
         const MockGitExecutor = jest.fn()
             .mockImplementation(() => ({
                 branch: jest.fn(),
