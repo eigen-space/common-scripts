@@ -41,7 +41,13 @@ export function writeObjectAsJson(pathToSave: string, object: AnyDictionary, opt
     fs.writeFileSync(pathToSave, data, options);
 }
 
-export function walkThrough(directory: string, callback: Function, recursiveCallback?: Function): void {
+export declare type WalkThroughCallback = (dir: string, file: string) => void;
+export declare type RecursiveWalkThroughCallback = (dir: string) => void;
+export function walkThrough(
+    directory: string,
+    callback: WalkThroughCallback,
+    recursiveCallback?: RecursiveWalkThroughCallback
+): void {
     if (!fs.statSync(directory).isDirectory()) {
         return;
     }

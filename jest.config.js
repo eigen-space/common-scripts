@@ -21,13 +21,15 @@ module.exports = {
         '<rootDir>/dist/'
     ],
     setupFiles: [
-        '<rootDir>/config/jest/setup/console.setup.js'
+        '<rootDir>/config/jest/setup/console.setup.ts'
+    ],
+    setupFilesAfterEnv: [
+        '<rootDir>/config/jest/env-setup/check-assertions-number.ts'
     ],
     testURL: 'http://localhost',
     transform: {
-        '^(?!.*\\.(js|ts|tsx|css|json)$)': '<rootDir>/config/jest/transform/file.transform.js',
-        '^.+\\.css$': '<rootDir>/config/jest/transform/css.transform.js',
-        '^.+\\.tsx?$': '<rootDir>/config/jest/transform/typescript.transform.js'
+        '^(?!.*\\.(js|ts|tsx|css|json)$)': '<rootDir>/config/jest/transform/file.transform.ts',
+        '^.+\\.tsx?$': 'ts-jest'
     },
     moduleFileExtensions: [
         'web.ts',
@@ -39,16 +41,14 @@ module.exports = {
         'node'
     ],
     globals: {
-        'ts-jest': {
-            tsConfig: 'tsconfig.spec.json'
-        }
+        'ts-jest': { tsConfig: 'tsconfig.spec.json' }
     },
     coverageThreshold: {
         global: {
-            branches: 4.5,
-            functions: 8,
-            lines: 4,
-            statements: 4.94
+            statements: 25,
+            branches: 19,
+            lines: 25,
+            functions: 20
         }
     }
 };
