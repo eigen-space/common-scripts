@@ -1,6 +1,6 @@
 {
     "name": "@eigenspace/helper-scripts",
-    "version": "3.0.9",
+    "version": "4.0.1",
     "private": false,
     "main": "index.js",
     "repository": "https://github.com/eigen-space/common-scripts.git",
@@ -28,9 +28,9 @@
         "lint": "yarn lint:code . && yarn lint:markdown",
         "test": "jest --passWithNoTests",
         "test:ci": "jest --ci",
-        "hooks:pre-push": "yarn lint && yarn test",
+        "hooks:pre-push": "yarn lint",
         "hooks:pre-commit": "lint-staged",
-        "deploy:publish": "node ./dist/scripts/ci/publish/index.js",
+        "deploy:publish": "npx -p @eigenspace/package-publisher publish",
         "script:update-deps-remote": "npx -p @eigenspace/helper-scripts update-deps"
     },
     "husky": {
