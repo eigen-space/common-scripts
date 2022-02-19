@@ -1,6 +1,6 @@
 {
     "name": "@eigenspace/helper-scripts",
-    "version": "4.0.4",
+    "version": "5.0.0",
     "private": false,
     "main": "index.js",
     "repository": "https://github.com/eigen-space/common-scripts.git",

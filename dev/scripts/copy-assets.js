@@ -1,4 +1,4 @@
-const { copy } = require('../../dist/index');
+const fs = require('fs');
 
 const target = 'dist';
-copy(['package.json', 'yarn.lock'], target);
+['package.json', 'yarn.lock'].forEach(file => fs.copyFileSync(file, `${target}/${file}`));

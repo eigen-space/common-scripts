@@ -4,35 +4,6 @@ import * as os from 'os';
 import * as path from 'path';
 import { AnyDictionary } from '@eigenspace/common-types';
 
-export function createDirectory(directory: string): void {
-    const parentDirectory = path.dirname(directory);
-
-    if (!fs.existsSync(parentDirectory)) {
-        createDirectory(parentDirectory);
-    }
-
-    if (fs.existsSync(parentDirectory) && !fs.existsSync(directory)) {
-        fs.mkdirSync(directory);
-    }
-}
-
-export function deleteAllFilesInDirectory(directory: string): void {
-    fs.readdirSync(directory).forEach((file: string) => {
-        fs.unlinkSync(path.join(directory, file));
-    });
-}
-
-export function removeDirectory(directory: string): void {
-    walkThrough(
-        directory,
-        () => {},
-        (dir: string) => {
-            deleteAllFilesInDirectory(dir);
-            fs.rmdirSync(dir);
-        }
-    );
-}
-
 export function writeObjectAsJson(pathToSave: string, object: AnyDictionary, options: WriteFileOptions = {}): void {
     const indent = 4;
     const data = JSON.stringify(object, null, indent)
